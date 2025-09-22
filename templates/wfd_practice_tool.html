@@ -94,6 +94,11 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+
+        #star-btn.starred svg {
+            fill: #facc15;
+            color: #facc15;
+        }
     </style>
 </head>
 <body class="bg-slate-100 flex items-start justify-center min-h-screen font-sans p-4">
@@ -107,19 +112,21 @@
 
             <!-- 控制区域 -->
             <div class="grid grid-cols-1 md:grid-cols-3 items-center gap-4 mb-6">
-                <!-- 播放和题目控制 -->
-                <div class="flex items-center justify-center md:justify-start gap-1 sm:gap-2">
+                <!-- (优化!) 播放和题目控制 -->
+                <div class="flex items-center justify-center md:justify-start gap-2">
                     <button id="play-audio-btn" title="播放" class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
-                        <i data-lucide="play-circle"></i><span class="hidden sm:inline">播放</span>
+                        <i data-lucide="play-circle"></i><span class="hidden xl:inline">播放</span>
                     </button>
                     <button id="retry-btn" title="重来本题" class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
-                        <i data-lucide="rotate-cw"></i><span class="hidden sm:inline">重来</span>
+                        <i data-lucide="rotate-cw"></i><span class="hidden xl:inline">重来</span>
                     </button>
+                    <!-- Visual separator -->
+                    <div class="w-px h-8 bg-slate-300 mx-1"></div>
                     <button id="prev-question-btn" title="上一题" class="flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
-                        <i data-lucide="arrow-left-circle"></i><span class="hidden sm:inline">上题</span>
+                        <i data-lucide="arrow-left-circle"></i><span class="hidden xl:inline">上题</span>
                     </button>
                     <button id="next-question-btn" title="下一题" class="flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
-                        <span class="hidden sm:inline">下题</span><i data-lucide="arrow-right-circle"></i>
+                        <i data-lucide="arrow-right-circle"></i><span class="hidden xl:inline">下题</span>
                     </button>
                 </div>
                 <!-- 速度和倒计时 -->
@@ -137,8 +144,9 @@
                     </div>
                 </div>
                 <!-- 题目计数 -->
-                <div class="text-sm text-slate-500 text-center md:text-right">
-                    当前题目: <span id="current-question-index" class="font-bold">1</span> / <span id="total-questions" class="font-bold">0</span>
+                <div class="text-sm text-slate-500 text-center md:text-right flex items-center justify-center md:justify-end gap-2">
+                    <button id="star-btn" title="收藏本题" class="text-slate-400 hover:text-yellow-400 transition-colors"><i data-lucide="star" class="w-5 h-5"></i></button>
+                    <span>当前题目: <span id="current-question-index" class="font-bold">1</span> / <span id="total-questions" class="font-bold">0</span></span>
                 </div>
             </div>
 
@@ -169,12 +177,17 @@
                 &copy; <span id="copyright-year"></span> pte9999. All Rights Reserved.
             </footer>
         </div>
-        <!-- (新增!) 练习历史面板 -->
+        <!-- 练习历史与收藏面板 -->
         <div class="w-full bg-white rounded-2xl shadow-2xl p-6 md:p-8 lg:sticky lg:top-8">
             <div class="text-center border-b pb-4 mb-4">
                 <h2 class="text-2xl font-bold text-slate-800 flex items-center justify-center gap-2"><i data-lucide="history"></i>练习历史</h2>
             </div>
-            <div id="history-list-container" class="h-96 lg:h-[calc(100vh-12rem)] overflow-y-auto pr-2">
+            <!-- (新增!) 练习模式切换 -->
+            <div class="mb-4 p-1 bg-slate-100 rounded-lg flex gap-1">
+                <button id="mode-all" class="flex-1 py-2 text-sm font-bold rounded-md transition-colors">所有题目</button>
+                <button id="mode-starred" class="flex-1 py-2 text-sm font-bold rounded-md transition-colors">我的收藏</button>
+            </div>
+            <div id="history-list-container" class="h-96 lg:h-[calc(100vh-15rem)] overflow-y-auto pr-2">
                 <ul id="history-list" class="space-y-3">
                     <!-- 历史记录将通过JS动态插入这里 -->
                 </ul>
@@ -260,15 +273,17 @@
                 { id: 72, sentence: ["You need to pass the written exam for the driver's license."] }
             ];
 
-            let currentQuestionIndex = 0;
+            let currentPlaylist = [];
+            let currentPlaylistIndex = 0;
             let synth = window.speechSynthesis;
             let utterance = new SpeechSynthesisUtterance();
             let voices = [];
             let timerInterval = null;
             let timeLeft = 30;
-            let scoreHistory = []; // (新增!) 用于存储历史记录的数组
+            let scoreHistory = [];
+            let starredQuestions = [];
+            let practiceMode = 'all'; // 'all' or 'starred'
 
-            // ... (其他元素获取) ...
             const playAudioBtn = document.getElementById('play-audio-btn');
             const retryBtn = document.getElementById('retry-btn');
             const prevQuestionBtn = document.getElementById('prev-question-btn');
@@ -286,60 +301,109 @@
             const scoreDisplay = document.getElementById('score-display');
             const totalScoreDisplay = document.getElementById('total-score-display');
             const copyrightYearSpan = document.getElementById('copyright-year');
-            const historyList = document.getElementById('history-list'); // (新增!) 历史列表元素
+            const historyList = document.getElementById('history-list');
+            const starBtn = document.getElementById('star-btn');
+            const modeAllBtn = document.getElementById('mode-all');
+            const modeStarredBtn = document.getElementById('mode-starred');
 
-            // (新增!) 从localStorage加载历史记录
-            function loadHistoryFromStorage() {
+            function loadFromStorage() {
                 const savedHistory = localStorage.getItem('wfdScoreHistory');
-                if (savedHistory) {
-                    scoreHistory = JSON.parse(savedHistory);
-                }
+                if (savedHistory) scoreHistory = JSON.parse(savedHistory);
+                const savedStarred = localStorage.getItem('wfdStarredQuestions');
+                if (savedStarred) starredQuestions = JSON.parse(savedStarred);
             }
 
-            // (新增!) 保存历史记录到localStorage
-            function saveHistoryToStorage() {
+            function saveToStorage() {
                 localStorage.setItem('wfdScoreHistory', JSON.stringify(scoreHistory));
+                localStorage.setItem('wfdStarredQuestions', JSON.stringify(starredQuestions));
             }
 
-            // (新增!) 渲染历史记录列表
             function renderHistory() {
-                historyList.innerHTML = ''; // 清空列表
+                historyList.innerHTML = '';
                 if (scoreHistory.length === 0) {
                     historyList.innerHTML = `<li class="text-slate-400 text-center py-4">暂无练习记录</li>`;
                     return;
                 }
-                // 从新到旧显示
                 scoreHistory.slice().reverse().forEach(entry => {
                     const li = document.createElement('li');
                     li.className = `p-3 rounded-lg flex justify-between items-center ${entry.score === entry.totalScore ? 'bg-green-50' : 'bg-red-50'}`;
-
                     const scoreColor = entry.score === entry.totalScore ? 'text-green-700' : 'text-red-700';
-
                     li.innerHTML = `
-                            <div>
-                                <span class="font-bold text-slate-700">第 ${entry.questionId} 题</span>
-                                <span class="block text-xs text-slate-500">${new Date(entry.timestamp).toLocaleString('zh-CN')}</span>
-                            </div>
-                            <span class="text-xl font-extrabold ${scoreColor}">${entry.score}/${entry.totalScore}</span>
-                        `;
+                        <div>
+                            <span class="font-bold text-slate-700">第 ${entry.questionId} 题</span>
+                            <span class="block text-xs text-slate-500">${new Date(entry.timestamp).toLocaleString('zh-CN')}</span>
+                        </div>
+                        <span class="text-xl font-extrabold ${scoreColor}">${entry.score}/${entry.totalScore}</span>
+                    `;
                     historyList.appendChild(li);
                 });
             }
 
-            function initialize() {
-                loadHistoryFromStorage(); // (新增!)
-                renderHistory(); // (新增!)
-                loadVoices();
-                loadQuestion(currentQuestionIndex);
-                totalQuestionsSpan.textContent = wfdSentences.length;
-                copyrightYearSpan.textContent = new Date().getFullYear();
+            function setPracticeMode(mode) {
+                practiceMode = mode;
+                if (mode === 'all') {
+                    currentPlaylist = [...wfdSentences];
+                } else {
+                    currentPlaylist = wfdSentences.filter(q => starredQuestions.includes(q.id));
+                    if (currentPlaylist.length === 0) {
+                        alert('收藏夹是空的！请先在“所有题目”模式下标星收藏题目。');
+                        setPracticeMode('all'); // Revert to all mode
+                        return;
+                    }
+                }
+                currentPlaylistIndex = 0;
+                updateModeUI();
+                loadQuestion(currentPlaylistIndex);
+            }
 
-                if (synth.onvoiceschanged !== undefined) {
-                    synth.onvoiceschanged = loadVoices;
+            function updateModeUI() {
+                totalQuestionsSpan.textContent = currentPlaylist.length || wfdSentences.length;
+                if (practiceMode === 'all') {
+                    modeAllBtn.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+                    modeAllBtn.classList.remove('text-slate-600');
+                    modeStarredBtn.classList.add('text-slate-600');
+                    modeStarredBtn.classList.remove('bg-white', 'text-indigo-600', 'shadow-sm');
+                } else {
+                    modeStarredBtn.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+                    modeStarredBtn.classList.remove('text-slate-600');
+                    modeAllBtn.classList.add('text-slate-600');
+                    modeAllBtn.classList.remove('bg-white', 'text-indigo-600', 'shadow-sm');
                 }
             }
 
-            // ... (loadVoices, loadQuestion, startTimer, stopTimer, updateSpeechRate 函数保持不变) ...
+            function updateStarIcon() {
+                if (!currentPlaylist.length) return;
+                const currentQuestion = currentPlaylist[currentPlaylistIndex];
+                if (starredQuestions.includes(currentQuestion.id)) {
+                    starBtn.classList.add('starred');
+                } else {
+                    starBtn.classList.remove('starred');
+                }
+            }
+
+            function toggleStar() {
+                if (!currentPlaylist.length) return;
+                const currentQuestion = currentPlaylist[currentPlaylistIndex];
+                const questionId = currentQuestion.id;
+                const starIndex = starredQuestions.indexOf(questionId);
+                if (starIndex > -1) {
+                    starredQuestions.splice(starIndex, 1);
+                } else {
+                    starredQuestions.push(questionId);
+                }
+                saveToStorage();
+                updateStarIcon();
+            }
+
+            function initialize() {
+                loadFromStorage();
+                renderHistory();
+                loadVoices();
+                setPracticeMode('all');
+                copyrightYearSpan.textContent = new Date().getFullYear();
+                if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
+            }
+
             function loadVoices() {
                 voices = synth.getVoices();
                 const preferredVoice = voices.find(voice => voice.name.includes('Google') && voice.lang.startsWith('en')) || voices.find(voice => voice.lang.startsWith('en-US'));
@@ -350,52 +414,37 @@
 
             function loadQuestion(index) {
                 stopTimer();
-                const question = wfdSentences[index];
+                if (currentPlaylist.length === 0) {
+                    userInput.disabled = true;
+                    submitBtn.disabled = true;
+                    currentQuestionIndexSpan.textContent = 0;
+                    return;
+                }
+                userInput.disabled = false;
+                submitBtn.disabled = false;
+
+                const question = currentPlaylist[index];
                 utterance.text = question.sentence[0];
                 userInput.value = '';
-                userInput.disabled = false;
                 resultContainer.classList.add('hidden');
                 currentQuestionIndexSpan.textContent = index + 1;
                 userInput.focus();
+                updateStarIcon();
             }
 
-            function startTimer() {
-                stopTimer();
-                timeLeft = 30;
-                timerDisplay.textContent = timeLeft;
-                timerDisplay.classList.remove('urgent');
+            function startTimer() { /* ... unchanged ... */ }
+            function stopTimer() { /* ... unchanged ... */ }
+            function updateSpeechRate() { /* ... unchanged ... */ }
 
-                timerInterval = setInterval(() => {
-                    timeLeft--;
-                    timerDisplay.textContent = timeLeft;
-                    if (timeLeft <= 10) {
-                        timerDisplay.classList.add('urgent');
-                    }
-                    if (timeLeft <= 0) {
-                        stopTimer();
-                        submitBtn.click();
-                    }
-                }, 1000);
-            }
-
-            function stopTimer() {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                timerDisplay.textContent = 30;
-                timerDisplay.classList.remove('urgent');
-            }
-
-            function updateSpeechRate() {
-                const rate = parseFloat(speedControl.value);
-                utterance.rate = rate;
-                speedValueSpan.textContent = `${rate.toFixed(1)}x`;
-            }
+            function startTimer() { stopTimer(); timeLeft = 30; timerDisplay.textContent = timeLeft; timerDisplay.classList.remove('urgent'); timerInterval = setInterval(() => { timeLeft--; timerDisplay.textContent = timeLeft; if (timeLeft <= 10) { timerDisplay.classList.add('urgent'); } if (timeLeft <= 0) { stopTimer(); submitBtn.click(); } }, 1000); }
+            function stopTimer() { clearInterval(timerInterval); timerInterval = null; timerDisplay.textContent = 30; timerDisplay.classList.remove('urgent'); }
+            function updateSpeechRate() { const rate = parseFloat(speedControl.value); utterance.rate = rate; speedValueSpan.textContent = `${rate.toFixed(1)}x`; }
 
             function compareAnswers() {
                 stopTimer();
                 userInput.disabled = true;
 
-                const question = wfdSentences[currentQuestionIndex];
+                const question = currentPlaylist[currentPlaylistIndex];
                 const userText = userInput.value;
                 const normalize = (text) => text.trim().split(/\s+/).filter(Boolean);
                 const userWords = normalize(userText);
@@ -415,14 +464,9 @@
                             correctWordsPool.splice(matchIndex, 1);
                         }
                     }
-
                     if (score > bestScore) {
                         bestScore = score;
-                        bestComparison = {
-                            score: score,
-                            totalScore: correctWords.length,
-                            correctText: correctText,
-                        };
+                        bestComparison = { score: score, totalScore: correctWords.length, correctText: correctText };
                     }
                 }
 
@@ -430,22 +474,14 @@
                 totalScoreDisplay.textContent = bestComparison.totalScore;
                 correctAnswerDiv.textContent = bestComparison.correctText;
 
-                // (新增!) 将结果添加到历史记录
-                const historyEntry = {
-                    questionId: currentQuestionIndex + 1,
-                    score: bestComparison.score,
-                    totalScore: bestComparison.totalScore,
-                    timestamp: new Date().toISOString()
-                };
+                const historyEntry = { questionId: question.id, score: bestComparison.score, totalScore: bestComparison.totalScore, timestamp: new Date().toISOString() };
                 scoreHistory.push(historyEntry);
-                saveHistoryToStorage();
+                saveToStorage();
                 renderHistory();
 
-                // ... (生成对比结果的HTML逻辑保持不变) ...
                 const correctWordsForDiff = normalize(bestComparison.correctText);
                 let resultHTML = '';
                 const correctWordMatched = correctWordsForDiff.map(() => false);
-
                 const userWordsWithStatus = userWords.map(uWord => {
                     const matchIndex = correctWordsForDiff.findIndex((cWord, index) => !correctWordMatched[index] && cWord === uWord);
                     if (matchIndex !== -1) {
@@ -454,67 +490,44 @@
                     }
                     return { word: uWord, status: 'incorrect' };
                 });
-
-                userWordsWithStatus.forEach(item => {
-                    resultHTML += `<span class="word-${item.status}">${item.word}</span>`;
-                });
-
-                correctWordsForDiff.forEach((word, index) => {
-                    if (!correctWordMatched[index]) {
-                        resultHTML += `<span class="word-missing">${word} (遗漏)</span>`;
-                    }
-                });
-
+                userWordsWithStatus.forEach(item => { resultHTML += `<span class="word-${item.status}">${item.word}</span>`; });
+                correctWordsForDiff.forEach((word, index) => { if (!correctWordMatched[index]) { resultHTML += `<span class="word-missing">${word} (遗漏)</span>`; } });
                 comparisonResultDiv.innerHTML = resultHTML || "<span>(您没有输入任何内容)</span>";
                 resultContainer.classList.remove('hidden');
             }
 
-            // ... (其他事件监听器保持不变) ...
             function playCurrentAudio() {
-                if (synth.speaking) synth.cancel();
-
+                if (synth.speaking || !currentPlaylist.length) return;
                 playAudioBtn.classList.add('pulse-once');
                 setTimeout(() => playAudioBtn.classList.remove('pulse-once'), 800);
-
-                utterance.onend = () => {
-                    startTimer();
-                    userInput.focus();
-                };
+                utterance.onend = () => { startTimer(); userInput.focus(); };
                 synth.speak(utterance);
             }
 
             function navigateAndPlay(direction) {
+                if (currentPlaylist.length === 0) return;
                 if (direction === 'next') {
-                    currentQuestionIndex = (currentQuestionIndex + 1) % wfdSentences.length;
+                    currentPlaylistIndex = (currentPlaylistIndex + 1) % currentPlaylist.length;
                 } else {
-                    currentQuestionIndex = (currentQuestionIndex - 1 + wfdSentences.length) % wfdSentences.length;
+                    currentPlaylistIndex = (currentPlaylistIndex - 1 + currentPlaylist.length) % currentPlaylist.length;
                 }
-                loadQuestion(currentQuestionIndex);
+                loadQuestion(currentPlaylistIndex);
 
                 const buttons = [playAudioBtn, retryBtn, prevQuestionBtn, nextQuestionBtn];
                 buttons.forEach(btn => btn.disabled = true);
-
-                setTimeout(() => {
-                    playCurrentAudio();
-                    buttons.forEach(btn => btn.disabled = false);
-                }, 1000);
+                setTimeout(() => { playCurrentAudio(); buttons.forEach(btn => btn.disabled = false); }, 1000);
             }
 
             playAudioBtn.addEventListener('click', playCurrentAudio);
-            retryBtn.addEventListener('click', () => {
-                loadQuestion(currentQuestionIndex);
-                playCurrentAudio();
-            });
+            retryBtn.addEventListener('click', () => { if (!currentPlaylist.length) return; loadQuestion(currentPlaylistIndex); playCurrentAudio(); });
             prevQuestionBtn.addEventListener('click', () => navigateAndPlay('prev'));
             nextQuestionBtn.addEventListener('click', () => navigateAndPlay('next'));
             speedControl.addEventListener('input', updateSpeechRate);
             submitBtn.addEventListener('click', compareAnswers);
-            userInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    submitBtn.click();
-                }
-            });
+            userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitBtn.click(); } });
+            starBtn.addEventListener('click', toggleStar);
+            modeAllBtn.addEventListener('click', () => setPracticeMode('all'));
+            modeStarredBtn.addEventListener('click', () => setPracticeMode('starred'));
 
             initialize();
             lucide.createIcons();
