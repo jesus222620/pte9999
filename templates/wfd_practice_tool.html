@@ -53,6 +53,10 @@
             border: 1px dashed #6366f1;
         }
 
+        .pulse-once {
+            animation: pulse-animation 0.8s ease-out;
+        }
+
         @keyframes pulse-animation {
             0% {
                 box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
@@ -67,29 +71,33 @@
             }
         }
 
-        .pulse-once {
-            animation: pulse-animation 0.8s ease-out;
-        }
-
         #timer-display {
             transition: color 0.5s, transform 0.5s;
         }
 
             #timer-display.urgent {
                 color: #dc2626;
-                transform: scale(1.1);
-                animation: blink 1s infinite;
+                animation: pulse-urgent 1s infinite;
             }
 
-        @keyframes blink {
-            50% {
-                opacity: 0.5;
+        @keyframes pulse-urgent {
+            0%, 100% {
+                transform: scale(1.1);
             }
+
+            50% {
+                transform: scale(1);
+            }
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body class="bg-slate-100 flex items-center justify-center min-h-screen font-sans">
-    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl p-8 m-4 relative">
+    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl p-6 md:p-8 m-4">
 
         <div class="text-center border-b pb-4 mb-6">
             <h1 class="text-3xl font-extrabold text-slate-800">高级WFD默写教练</h1>
@@ -99,24 +107,24 @@
         <!-- 控制区域 -->
         <div class="grid grid-cols-1 md:grid-cols-3 items-center gap-4 mb-6">
             <!-- 播放和题目控制 -->
-            <div class="flex items-center justify-center md:justify-start gap-2">
-                <button id="play-audio-btn" class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105" title="播放本题音频">
-                    <i data-lucide="play-circle"></i><span>播放</span>
+            <div class="flex items-center justify-center md:justify-start gap-2 sm:gap-4">
+                <button id="play-audio-btn" title="播放" class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
+                    <i data-lucide="play-circle"></i><span class="hidden sm:inline">播放</span>
                 </button>
-                <button id="retry-btn" class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105" title="重来本题">
-                    <i data-lucide="rotate-cw"></i><span>重来</span>
+                <button id="retry-btn" title="重来本题" class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
+                    <i data-lucide="rotate-cw"></i><span class="hidden sm:inline">重来</span>
                 </button>
-                <button id="next-question-btn" class="flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105" title="下一题">
-                    <span>下一题</span><i data-lucide="arrow-right-circle"></i>
+                <button id="next-question-btn" title="下一题" class="flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
+                    <span class="hidden sm:inline">下一题</span><i data-lucide="arrow-right-circle"></i>
                 </button>
             </div>
             <!-- 速度和倒计时 -->
-            <div class="flex items-center justify-center gap-6">
+            <div class="flex items-center justify-center gap-4 sm:gap-6">
                 <div class="flex items-center gap-2">
                     <i data-lucide="gauge-circle" class="text-slate-500"></i>
                     <label for="speed-control" class="text-slate-600 font-medium">语速:</label>
-                    <input id="speed-control" type="range" min="0.7" max="1.3" value="0.9" step="0.1" class="w-24 cursor-pointer">
-                    <span id="speed-value" class="font-bold text-indigo-600 w-8">0.9x</span>
+                    <input id="speed-control" type="range" min="0.7" max="1.3" value="1.0" step="0.1" class="w-20 sm:w-24 cursor-pointer">
+                    <span id="speed-value" class="font-bold text-indigo-600 w-8">1.0x</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <i data-lucide="timer" class="text-slate-500"></i>
@@ -138,108 +146,102 @@
             提交答案并对比
         </button>
 
-        <div id="result-container" class="mt-8 hidden">
+        <div id="result-container" class="mt-8 hidden fade-in">
             <div class="border-t pt-6">
-                <div class="text-center mb-6 fade-in">
+                <div class="text-center mb-6">
                     <h3 class="text-2xl font-bold text-slate-700">你的得分</h3>
                     <p class="text-6xl font-extrabold text-indigo-600 mt-2">
                         <span id="score-display">0</span> / <span id="total-score-display">0</span>
                     </p>
                 </div>
-                <div class="fade-in" style="animation-delay: 0.2s;">
-                    <h3 class="text-xl font-bold text-slate-700 mb-4">对比结果 (已匹配最佳答案)</h3>
-                    <div id="comparison-result" class="p-4 bg-slate-50 rounded-lg comparison-result"></div>
-                </div>
-                <div class="fade-in" style="animation-delay: 0.4s;">
-                    <h3 class="text-xl font-bold text-slate-700 mt-6 mb-4">标准答案参考</h3>
-                    <div id="correct-answer" class="p-4 bg-slate-50 rounded-lg text-slate-800 font-semibold text-lg"></div>
-                </div>
+                <h3 class="text-xl font-bold text-slate-700 mb-4">对比结果</h3>
+                <div id="comparison-result" class="p-4 bg-slate-50 rounded-lg comparison-result"></div>
+                <h3 class="text-xl font-bold text-slate-700 mt-6 mb-4">正确答案</h3>
+                <div id="correct-answer" class="p-4 bg-slate-50 rounded-lg text-slate-800 font-semibold text-lg"></div>
             </div>
         </div>
 
-        <footer class="text-center text-xs text-slate-400 mt-8 pt-4 border-t">
-            <p>&copy; <span id="copyright-year"></span> pte9999. All Rights Reserved.</p>
+        <footer class="text-center text-slate-400 text-sm mt-8 pt-4 border-t">
+            &copy; <span id="copyright-year"></span> pte9999. All Rights Reserved.
         </footer>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- 题库 ---
-            // displaySentence: 用于朗读和最终展示的标准答案
-            // validAnswers: 所有可以被接受为正确答案的变体
             const wfdSentences = [
-                { id: 1, displaySentence: "Please get us a meeting room for the next hour.", validAnswers: ["Please get us a meeting room for the next hour."] },
-                { id: 2, displaySentence: "Communication skills have become more important in recent years.", validAnswers: ["Communication skills have become more important in recent years."] },
-                { id: 3, displaySentence: "Before preparing any food, be sure to wash your hands well.", validAnswers: ["Before preparing any food, be sure to wash your hands well."] },
-                { id: 4, displaySentence: "Before preparing food, please make sure to wash your hands.", validAnswers: ["Before preparing food, please make sure to wash your hands."] },
-                { id: 5, displaySentence: "The weather has been lovely from this time of the year.", validAnswers: ["The weather has been lovely from this time of the year."] },
-                { id: 6, displaySentence: "Please close the door behind you when you leave the room.", validAnswers: ["Please close the door behind you when you leave the room."] },
-                { id: 7, displaySentence: "There was a lot of traffic this morning.", validAnswers: ["There was a lot of traffic this morning."] },
-                { id: 8, displaySentence: "The restroom is down the hall and on the right.", validAnswers: ["The restroom is down the hall and on the right.", "The restrooms are down the hall to the right."] },
-                { id: 9, displaySentence: "The teacher explains the homework to the students.", validAnswers: ["The teacher explains the homework to the students."] },
-                { id: 10, displaySentence: "At that time, few people moved from towns to villages.", validAnswers: ["At that time, few people moved from towns to villages.", "At that time, few people moved through the town to the village."] },
-                { id: 11, displaySentence: "The fiction books have just passed to the counter.", validAnswers: ["The fiction books have just passed to the counter."] },
-                { id: 12, displaySentence: "You have to make an appointment with your doctor.", validAnswers: ["You have to make an appointment with your doctor."] },
-                { id: 13, displaySentence: "The students will meet their new teacher after summer vacation.", validAnswers: ["The students will meet their new teacher after summer vacation."] },
-                { id: 14, displaySentence: "Please move us to the meeting room for the next hour.", validAnswers: ["Please move us to the meeting room for the next hour."] },
-                { id: 15, displaySentence: "You must call your doctor to make an appointment.", validAnswers: ["You must call your doctor to make an appointment."] },
-                { id: 16, displaySentence: "Please make an appointment with your tutor about work.", validAnswers: ["Please make an appointment with your tutor about work."] },
-                { id: 17, displaySentence: "Rail transport is becoming more and more popular.", validAnswers: ["Rail transport is becoming more and more popular."] },
-                { id: 18, displaySentence: "You can keep your bags in the back room.", validAnswers: ["You can keep your bags in the back room."] },
-                { id: 19, displaySentence: "The weather used to be lovely at this time of the year.", validAnswers: ["The weather used to be lovely at this time of the year."] },
-                { id: 20, displaySentence: "Everyone in this room needs to follow the rules.", validAnswers: ["Everyone in this room needs to follow the rules."] },
-                { id: 21, displaySentence: "I want to make an appointment with the manager.", validAnswers: ["I want to make an appointment with the manager.", "I want to make an appointment to see the manager."] },
-                { id: 22, displaySentence: "The teacher explained the homework to the class.", validAnswers: ["The teacher explained the homework to the class."] },
-                { id: 23, displaySentence: "You should meet me in the lecture theater room.", validAnswers: ["You should meet me in the lecture theater room."] },
-                { id: 24, displaySentence: "At that time, few people moved from towns to villages.", validAnswers: ["At that time, few people moved from towns to villages."] },
-                { id: 25, displaySentence: "Students of the first year usually live on campus.", validAnswers: ["Students of the first year usually live on campus."] },
-                { id: 26, displaySentence: "The fiction books are just past the counter.", validAnswers: ["The fiction books are just past the counter."] },
-                { id: 27, displaySentence: "The teacher asked the group to complete the task.", validAnswers: ["The teacher asked the group to complete the task."] },
-                { id: 28, displaySentence: "There was a lot of traffic jams on the road this morning.", validAnswers: ["There was a lot of traffic jams on the road this morning."] },
-                { id: 29, displaySentence: "The school canteen sells a large variety of water and food.", validAnswers: ["The school canteen sells a large variety of water and food."] },
-                { id: 30, displaySentence: "Please turn off the lights to save energy.", validAnswers: ["Please turn off the lights to save energy.", "Please turn off the light to save energy.", "Please turn off the lights to save the energy.", "Please turn off the light to save the energy."] },
-                { id: 31, displaySentence: "Traffic is the main cause of air pollution in many cities.", validAnswers: ["Traffic is the main cause of air pollution in many cities.", "Traffic is the main cause of pollution in many cities."] },
-                { id: 32, displaySentence: "You will get your uniform on the first day.", validAnswers: ["You will get your uniform on the first day."] },
-                { id: 33, displaySentence: "In my opinion, this car should be repaired soon.", validAnswers: ["In my opinion, this car should be repaired soon."] },
-                { id: 34, displaySentence: "We should have a meeting to discuss and report.", validAnswers: ["We should have a meeting to discuss and report."] },
-                { id: 35, displaySentence: "Sales figures for last year were better than expected.", validAnswers: ["Sales figures for last year were better than expected."] },
-                { id: 36, displaySentence: "The university canteen offers different healthy meal options.", validAnswers: ["The university canteen offers different healthy meal options."] },
-                { id: 37, displaySentence: "Employment opportunities available in engineering are increasing rapidly.", validAnswers: ["Employment opportunities available in engineering are increasing rapidly."] },
-                { id: 38, displaySentence: "We cannot consider an increase in price at this stage.", validAnswers: ["We cannot consider an increase in price at this stage.", "We can’t consider any increase in our price at this stage."] },
-                { id: 39, displaySentence: "We should have a meeting to discuss the report.", validAnswers: ["We should have a meeting to discuss the report."] },
-                { id: 40, displaySentence: "Our culture influences the choices we make.", validAnswers: ["Our culture influences the choices we make."] },
-                { id: 41, displaySentence: "There will be a guest lecturer in the next class.", validAnswers: ["There will be a guest lecturer in the next class."] },
-                { id: 42, displaySentence: "Exam results will be published on the noticeboard.", validAnswers: ["Exam results will be published on the noticeboard."] },
-                { id: 43, displaySentence: "Atoms are the central building blocks of matter.", validAnswers: ["Atoms are the central building blocks of matter."] },
-                { id: 44, displaySentence: "There will be a meeting for the first-year students on Friday.", validAnswers: ["There will be a meeting for the first-year students on Friday."] },
-                { id: 45, displaySentence: "The stairs are to the left of the elevator.", validAnswers: ["The stairs are to the left of the elevator."] },
-                { id: 46, displaySentence: "Restrooms are down the entrance and to the right.", validAnswers: ["Restrooms are down the entrance and to the right."] },
-                { id: 47, displaySentence: "Time is needed to complete the lecture.", validAnswers: ["Time is needed to complete the lecture."] },
-                { id: 48, displaySentence: "Restaurants are down to the hall and next to the right.", validAnswers: ["Restaurants are down to the hall and next to the right."] },
-                { id: 49, displaySentence: "Make sure you wash your hands before preparing the food.", validAnswers: ["Make sure you wash your hands before preparing the food."] },
-                { id: 50, displaySentence: "You should draw your graph on a separate page.", validAnswers: ["You should draw your graph on a separate page."] },
-                { id: 51, displaySentence: "You can ask your tutor for further assistance.", validAnswers: ["You can ask your tutor for further assistance."] },
-                { id: 52, displaySentence: "You are trained to be a special journalist.", validAnswers: ["You are trained to be a special journalist."] },
-                { id: 53, displaySentence: "We can have a lecture on the morning of Thursday.", validAnswers: ["We can have a lecture on the morning of Thursday."] },
-                { id: 54, displaySentence: "We can all meet in the office after the lecture.", validAnswers: ["We can all meet in the office after the lecture."] },
-                { id: 55, displaySentence: "The digital revolution has changed the way we read.", validAnswers: ["The digital revolution has changed the way we read."] },
-                { id: 56, displaySentence: "Before the refrigerator was invented, people used underground ice houses.", validAnswers: ["Before the refrigerator was invented, people used underground ice houses."] },
-                { id: 57, displaySentence: "The nation achieved prosperity by opening its ports for trade.", validAnswers: ["The nation achieved prosperity by opening its ports for trade."] },
-                { id: 58, displaySentence: "Understanding visual media has never been more challenging.", validAnswers: ["Understanding visual media has never been more challenging."] },
-                { id: 59, displaySentence: "Online courses allow students to work on their own paces.", validAnswers: ["Online courses allow students to work on their own paces."] },
-                { id: 60, displaySentence: "In my opinion, this car should be repaired soon.", validAnswers: ["In my opinion, this car should be repaired soon."] },
-                { id: 61, displaySentence: "You can get your coffee and tea in the lounge room.", validAnswers: ["You can get your coffee and tea in the lounge room."] },
-                { id: 62, displaySentence: "The teacher asked the group to commmence the task.", validAnswers: ["The teacher asked the group to commmence the task."] },
-                { id: 63, displaySentence: "The island is located at the south end of the bay.", validAnswers: ["The island is located at the south end of the bay."] },
-                { id: 64, displaySentence: "The falling birth rate means the number of students drops.", validAnswers: ["The falling birth rate means the number of students drops."] },
-                { id: 65, displaySentence: "Please click the logo above to enter the site.", validAnswers: ["Please click the logo above to enter the site."] },
-                { id: 66, displaySentence: "The camera can identify eyes and focus on them.", validAnswers: ["The camera can identify eyes and focus on them."] },
-                { id: 67, displaySentence: "This article refers to a number of interesting experiments.", validAnswers: ["This article refers to a number of interesting experiments."] },
-                { id: 68, displaySentence: "You should submit your team papers to the general office.", validAnswers: ["You should submit your team papers to the general office."] },
-                { id: 69, displaySentence: "All students have their own styles of learning.", validAnswers: ["All students have their own styles of learning."] },
-                { id: 70, displaySentence: "Stock prediction can be very capricious even for professionals.", validAnswers: ["Stock prediction can be very capricious even for professionals."] },
-                { id: 71, displaySentence: "New classrooms will be put into use next month.", validAnswers: ["New classrooms will be put into use next month."] },
-                { id: 72, displaySentence: "You need to pass the written exam for the driver's license.", validAnswers: ["You need to pass the written exam for the driver's license."] }
+                // ... (Your 72 sentences are here) ...
+                { id: 1, sentence: ["Please get us a meeting room for the next hour."] },
+                { id: 2, sentence: ["Communication skills have become more important in recent years."] },
+                { id: 3, sentence: ["Before preparing any food, be sure to wash your hands well."] },
+                { id: 4, sentence: ["Before preparing food, please make sure to wash your hands."] },
+                { id: 5, sentence: ["The weather has been lovely from this time of the year."] },
+                { id: 6, sentence: ["Please close the door behind you when you leave the room."] },
+                { id: 7, sentence: ["There was a lot of traffic this morning."] },
+                { id: 8, sentence: ["The restroom is down the hall and on the right.", "The restrooms are down the hall to the right."] },
+                { id: 9, sentence: ["The teacher explains the homework to the students."] },
+                { id: 10, sentence: ["At that time, few people moved through the town to the village.", "At that time, few people moved from towns to villages."] },
+                { id: 11, sentence: ["The fiction books have just passed to the counter."] },
+                { id: 12, sentence: ["You have to make an appointment with your doctor."] },
+                { id: 13, sentence: ["The students will meet their new teacher after summer vacation."] },
+                { id: 14, sentence: ["Please move us to the meeting room for the next hour."] },
+                { id: 15, sentence: ["You must call your doctor to make an appointment."] },
+                { id: 16, sentence: ["Please make an appointment with your tutor about work."] },
+                { id: 17, sentence: ["Rail transport is becoming more and more popular."] },
+                { id: 18, sentence: ["You can keep your bags in the back room."] },
+                { id: 19, sentence: ["The weather used to be lovely at this time of the year."] },
+                { id: 20, sentence: ["Everyone in this room needs to follow the rules."] },
+                { id: 21, sentence: ["I want to make an appointment with the manager.", "I want to make an appointment to see the manager."] },
+                { id: 22, sentence: ["The teacher explained the homework to the class."] },
+                { id: 23, sentence: ["You should meet me in the lecture theater room."] },
+                { id: 24, sentence: ["At that time, few people moved from towns to villages."] },
+                { id: 25, sentence: ["Students of the first year usually live on campus."] },
+                { id: 26, sentence: ["The fiction books are just past the counter."] },
+                { id: 27, sentence: ["The teacher asked the group to complete the task."] },
+                { id: 28, sentence: ["There was a lot of traffic jams on the road this morning."] },
+                { id: 29, sentence: ["The school canteen sells a large variety of water and food."] },
+                { id: 30, sentence: ["Please turn off the lights to save energy.", "Please turn off the light to save energy.", "Please turn off the lights to save the energy.", "Please turn off the light to save the energy."] },
+                { id: 31, sentence: ["Traffic is the main cause of pollution in many cities.", "Traffic is the main cause of air pollution in many cities."] },
+                { id: 32, sentence: ["You will get your uniform on the first day."] },
+                { id: 33, sentence: ["In my opinion, this car should be repaired soon."] },
+                { id: 34, sentence: ["We should have a meeting to discuss and report."] },
+                { id: 35, sentence: ["Sales figures for last year were better than expected."] },
+                { id: 36, sentence: ["The university canteen offers different healthy meal options."] },
+                { id: 37, sentence: ["Employment opportunities available in engineering are increasing rapidly."] },
+                { id: 38, sentence: ["We cannot consider an increase in price at this stage.", "We can’t consider any increase in our price at this stage."] },
+                { id: 39, sentence: ["We should have a meeting to discuss the report."] },
+                { id: 40, sentence: ["Our culture influences the choices we make."] },
+                { id: 41, sentence: ["There will be a guest lecturer in the next class."] },
+                { id: 42, sentence: ["Exam results will be published on the noticeboard."] },
+                { id: 43, sentence: ["Atoms are the central building blocks of matter."] },
+                { id: 44, sentence: ["There will be a meeting for the first-year students on Friday."] },
+                { id: 45, sentence: ["The stairs are to the left of the elevator."] },
+                { id: 46, sentence: ["Restrooms are down the entrance and to the right."] },
+                { id: 47, sentence: ["Time is needed to complete the lecture."] },
+                { id: 48, sentence: ["Restaurants are down to the hall and next to the right."] },
+                { id: 49, sentence: ["Make sure you wash your hands before preparing the food."] },
+                { id: 50, sentence: ["You should draw your graph on a separate page."] },
+                { id: 51, sentence: ["You can ask your tutor for further assistance."] },
+                { id: 52, sentence: ["You are trained to be a special journalist."] },
+                { id: 53, sentence: ["We can have a lecture on the morning of Thursday."] },
+                { id: 54, sentence: ["We can all meet in the office after the lecture."] },
+                { id: 55, sentence: ["The digital revolution has changed the way we read."] },
+                { id: 56, sentence: ["Before the refrigerator was invented, people used underground ice houses."] },
+                { id: 57, sentence: ["The nation achieved prosperity by opening its ports for trade."] },
+                { id: 58, sentence: ["Understanding visual media has never been more challenging."] },
+                { id: 59, sentence: ["Online courses allow students to work on their own paces."] },
+                { id: 60, sentence: ["In my opinion, this car should be repaired soon."] },
+                { id: 61, sentence: ["You can get your coffee and tea in the lounge room."] },
+                { id: 62, sentence: ["The teacher asked the group to commmence the task."] },
+                { id: 63, sentence: ["The island is located at the south end of the bay."] },
+                { id: 64, sentence: ["The falling birth rate means the number of students drops."] },
+                { id: 65, sentence: ["Please click the logo above to enter the site."] },
+                { id: 66, sentence: ["The camera can identify eyes and focus on them."] },
+                { id: 67, sentence: ["This article refers to a number of interesting experiments."] },
+                { id: 68, sentence: ["You should submit your team papers to the general office."] },
+                { id: 69, sentence: ["All students have their own styles of learning."] },
+                { id: 70, sentence: ["Stock prediction can be very capricious even for professionals."] },
+                { id: 71, sentence: ["New classrooms will be put into use next month."] },
+                { id: 72, sentence: ["You need to pass the written exam for the driver's license."] }
             ];
 
             let currentQuestionIndex = 0;
@@ -279,7 +281,7 @@
 
             function loadVoices() {
                 voices = synth.getVoices();
-                const preferredVoice = voices.find(voice => voice.name === 'Google US English') || voices.find(voice => voice.lang === 'en-US');
+                const preferredVoice = voices.find(voice => voice.name.includes('Google') && voice.lang.startsWith('en')) || voices.find(voice => voice.lang.startsWith('en-US'));
                 if (preferredVoice) utterance.voice = preferredVoice;
                 utterance.pitch = 1;
                 updateSpeechRate();
@@ -288,7 +290,7 @@
             function loadQuestion(index) {
                 stopTimer();
                 const question = wfdSentences[index];
-                utterance.text = question.displaySentence;
+                utterance.text = question.sentence[0]; // Always speak the first variant
                 userInput.value = '';
                 userInput.disabled = false;
                 resultContainer.classList.add('hidden');
@@ -328,82 +330,75 @@
                 speedValueSpan.textContent = `${rate.toFixed(1)}x`;
             }
 
-            // --- 核心评分与对比逻辑 ---
             function compareAnswers() {
                 stopTimer();
                 userInput.disabled = true;
 
-                const userText = userInput.value;
                 const question = wfdSentences[currentQuestionIndex];
-
-                let bestMatch = {
-                    score: -1,
-                    html: '',
-                    correctWords: []
-                };
-
-                const normalize = (text) => text.toLowerCase().replace(/[.,'’?!]/g, '').trim().split(/\s+/).filter(Boolean);
+                const userText = userInput.value;
+                const normalize = (text) => text.toLowerCase().replace(/[.,?!]/g, '').trim().split(/\s+/).filter(Boolean);
                 const userWords = normalize(userText);
 
-                // 遍历所有可能的正确答案，找到得分最高的一个
-                for (const validAnswer of question.validAnswers) {
-                    const correctWords = normalize(validAnswer);
-                    let currentScore = 0;
+                let bestScore = -1;
+                let bestComparison = {};
+
+                // Iterate through all possible correct sentences to find the best match
+                for (const correctText of question.sentence) {
+                    const correctWords = normalize(correctText);
+                    let score = 0;
                     let correctWordsPool = [...correctWords];
 
-                    // 计算得分
                     for (const userWord of userWords) {
                         const matchIndex = correctWordsPool.indexOf(userWord);
                         if (matchIndex !== -1) {
-                            currentScore++;
+                            score++;
                             correctWordsPool.splice(matchIndex, 1);
                         }
                     }
 
-                    // 如果当前得分更高，则更新最佳匹配
-                    if (currentScore > bestMatch.score) {
-                        bestMatch.score = currentScore;
-                        bestMatch.correctWords = correctWords;
-
-                        // --- 生成对比结果HTML ---
-                        // 这是一个简化的diff算法，用于生成美观的对比结果
-                        let resultHtml = '';
-                        let tempUserWords = [...userWords];
-                        correctWords.forEach(correctWord => {
-                            const userMatchIndex = tempUserWords.indexOf(correctWord);
-                            if (userMatchIndex !== -1) {
-                                // 处理匹配词之前的所有错误词
-                                for (let i = 0; i < userMatchIndex; i++) {
-                                    resultHtml += `<span class="word-incorrect">${tempUserWords[i]}</span>`;
-                                }
-                                // 处理匹配词
-                                resultHtml += `<span class="word-correct">${correctWord}</span>`;
-                                // 移除已处理的用户词
-                                tempUserWords.splice(0, userMatchIndex + 1);
-                            } else {
-                                // 未匹配，标记为遗漏
-                                resultHtml += `<span class="word-missing">${correctWord} (遗漏)</span>`;
-                            }
-                        });
-
-                        // 将剩余未匹配的用户词标记为错误
-                        tempUserWords.forEach(extraWord => {
-                            resultHtml += `<span class="word-incorrect">${extraWord}</span>`;
-                        });
-                        bestMatch.html = resultHtml;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestComparison = {
+                            score: score,
+                            totalScore: correctWords.length,
+                            correctText: correctText,
+                        };
                     }
                 }
 
-                // --- 显示最佳结果 ---
-                scoreDisplay.textContent = bestMatch.score;
-                totalScoreDisplay.textContent = bestMatch.correctWords.length;
-                comparisonResultDiv.innerHTML = bestMatch.html;
-                correctAnswerDiv.textContent = question.displaySentence; // 始终显示标准答案
+                scoreDisplay.textContent = bestComparison.score;
+                totalScoreDisplay.textContent = bestComparison.totalScore;
+                correctAnswerDiv.textContent = bestComparison.correctText;
+
+                // Generate visual diff based on the best matching correct answer
+                const correctWordsForDiff = normalize(bestComparison.correctText);
+                let resultHTML = '';
+                const correctWordMatched = correctWordsForDiff.map(() => false);
+
+                const userWordsWithStatus = userWords.map(uWord => {
+                    const matchIndex = correctWordsForDiff.findIndex((cWord, index) => !correctWordMatched[index] && cWord === uWord);
+                    if (matchIndex !== -1) {
+                        correctWordMatched[matchIndex] = true;
+                        return { word: uWord, status: 'correct' };
+                    }
+                    return { word: uWord, status: 'incorrect' };
+                });
+
+                userWordsWithStatus.forEach(item => {
+                    resultHTML += `<span class="word-${item.status}">${item.word}</span>`;
+                });
+
+                correctWordsForDiff.forEach((word, index) => {
+                    if (!correctWordMatched[index]) {
+                        resultHTML += `<span class="word-missing">${word} (遗漏)</span>`;
+                    }
+                });
+
+                comparisonResultDiv.innerHTML = resultHTML || "<span>(您没有输入任何内容)</span>";
                 resultContainer.classList.remove('hidden');
             }
 
-
-            playAudioBtn.addEventListener('click', () => {
+            function playCurrentAudio() {
                 if (synth.speaking) synth.cancel();
 
                 playAudioBtn.classList.add('pulse-once');
@@ -414,20 +409,36 @@
                     userInput.focus();
                 };
                 synth.speak(utterance);
-            });
+            }
+
+            playAudioBtn.addEventListener('click', playCurrentAudio);
 
             retryBtn.addEventListener('click', () => {
                 loadQuestion(currentQuestionIndex);
-                setTimeout(() => playAudioBtn.click(), 100); // 稍作延迟以确保状态重置
+                playCurrentAudio();
             });
 
+            // --- MODIFIED BEHAVIOR ---
             nextQuestionBtn.addEventListener('click', () => {
                 currentQuestionIndex = (currentQuestionIndex + 1) % wfdSentences.length;
                 loadQuestion(currentQuestionIndex);
+
+                // Disable buttons during the delay
+                playAudioBtn.disabled = true;
+                retryBtn.disabled = true;
+                nextQuestionBtn.disabled = true;
+
+                // Wait 1 second, then auto-play
+                setTimeout(() => {
+                    playCurrentAudio();
+                    // Re-enable buttons after playing
+                    playAudioBtn.disabled = false;
+                    retryBtn.disabled = false;
+                    nextQuestionBtn.disabled = false;
+                }, 1000);
             });
 
             speedControl.addEventListener('input', updateSpeechRate);
-
             submitBtn.addEventListener('click', compareAnswers);
 
             userInput.addEventListener('keydown', (e) => {
@@ -443,3 +454,4 @@
     </script>
 </body>
 </html>
+
