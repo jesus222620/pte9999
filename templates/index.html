@@ -43,6 +43,7 @@
     </style>
 </head>
 <body class="bg-slate-50 font-sans text-slate-800">
+    <!-- 导航栏 -->
     <nav class="bg-white shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-6 py-3 flex justify-between items-center">
             <a href="/" class="font-bold text-2xl text-indigo-600 flex items-center">
@@ -59,7 +60,9 @@
         </div>
     </nav>
 
+    <!-- 主体内容 -->
     <main id="content-area" class="container mx-auto px-6 py-12">
+        <!-- 公开内容 -->
         <div id="public-content">
             <div class="text-center">
                 <h1 class="text-5xl font-extrabold text-slate-900 mb-4">欢迎来到我们的平台!</h1>
@@ -71,6 +74,7 @@
                 </div>
             </div>
         </div>
+        <!-- 会员专区 -->
         <div id="member-content" class="hidden">
             <h2 class="text-4xl font-bold mb-8">会员专区</h2>
             <div class="grid md:grid-cols-3 gap-8">
@@ -93,6 +97,7 @@
         </div>
     </main>
 
+    <!-- 模态框/弹窗容器 -->
     <div id="modal-container"></div>
 
     <script>
@@ -102,7 +107,6 @@
             const publicContent = document.getElementById('public-content');
             const memberContent = document.getElementById('member-content');
             const modalContainer = document.getElementById('modal-container');
-            let currentUserEmail = null; // 用于暂存当前操作的用户邮箱
 
             const showModal = (content) => {
                 modalContainer.innerHTML = `<div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 modal-overlay">${content}</div>`;
@@ -115,7 +119,6 @@
             };
 
             const updateUIForLoggedIn = (email) => {
-                currentUserEmail = email;
                 authButtons.classList.add('hidden');
                 userInfo.classList.remove('hidden');
                 document.getElementById('user-email-display').textContent = email;
@@ -124,7 +127,6 @@
             };
 
             const updateUIForLoggedOut = () => {
-                currentUserEmail = null;
                 authButtons.classList.remove('hidden');
                 userInfo.classList.add('hidden');
                 publicContent.classList.remove('hidden');
@@ -133,87 +135,39 @@
             };
 
             const registerModalContent = `
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 modal-content">
-                    <h2 class="text-3xl font-bold mb-6">创建免费账户</h2>
-                    <form id="register-form">
-                        <div class="mb-4">
-                            <label for="register-email" class="block text-sm font-medium text-slate-700 mb-1">邮箱地址</label>
-                            <input id="register-email" type="email" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div class="mb-6">
-                            <label for="register-password" class="block text-sm font-medium text-slate-700 mb-1">密码</label>
-                            <input id="register-password" type="password" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-all">创建账户</button>
-                    </form>
-                </div>`;
+                    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 modal-content">
+                        <h2 class="text-3xl font-bold mb-6">创建免费账户</h2>
+                        <form id="register-form">
+                            <div class="mb-4">
+                                <label for="register-email" class="block text-sm font-medium text-slate-700 mb-1">邮箱地址</label>
+                                <input id="register-email" type="email" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                            </div>
+                            <div class="mb-6">
+                                <label for="register-password" class="block text-sm font-medium text-slate-700 mb-1">密码</label>
+                                <input id="register-password" type="password" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-all">创建账户</button>
+                        </form>
+                    </div>`;
 
             const loginModalContent = `
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 modal-content">
-                    <h2 class="text-3xl font-bold mb-6">登录</h2>
-                    <form id="login-form">
-                        <div class="mb-4">
-                            <label for="login-email" class="block text-sm font-medium text-slate-700 mb-1">邮箱地址</label>
-                            <input id="login-email" type="email" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div class="mb-6">
-                            <label for="login-password" class="block text-sm font-medium text-slate-700 mb-1">密码</label>
-                            <input id="login-password" type="password" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-all">登录</button>
-                    </form>
-                </div>`;
-
-            const verifyModalContent = (email) => `
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 modal-content">
-                    <h2 class="text-3xl font-bold mb-2">验证您的邮箱</h2>
-                    <p class="text-slate-600 mb-6">我们已向 <span class="font-bold">${email}</span> 发送了一个6位数验证码。(在开发中, 请查看服务器终端)。</p>
-                    <form id="verify-form">
-                        <input type="hidden" id="verify-email" value="${email}">
-                        <div class="mb-4">
-                            <label for="verify-code" class="block text-sm font-medium text-slate-700 mb-1">验证码</label>
-                            <input id="verify-code" type="text" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-all">确认验证</button>
-                    </form>
-                </div>`;
-
-            const termsModalContent = `
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-8 modal-content flex flex-col h-[90vh]">
-                    <h2 class="text-3xl font-bold mb-4">服务条款和隐私政策</h2>
-                    <div id="terms-content" class="flex-grow border rounded-lg p-2 overflow-y-auto bg-slate-50 mb-4">
-                       <iframe src="/terms" class="w-full h-full border-0"></iframe>
-                    </div>
-                    <div class="flex items-center mb-4">
-                        <input type="checkbox" id="agree-checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" disabled>
-                        <label for="agree-checkbox" class="ml-2 block text-sm text-slate-800">我已阅读并同意以上服务条款和隐私政策。</label>
-                    </div>
-                    <button id="agree-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg transition-all disabled:bg-slate-400 disabled:cursor-not-allowed" disabled>同意并继续</button>
-                </div>`;
+                    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 modal-content">
+                        <h2 class="text-3xl font-bold mb-6">登录</h2>
+                        <form id="login-form">
+                            <div class="mb-4">
+                                <label for="login-email" class="block text-sm font-medium text-slate-700 mb-1">邮箱地址</label>
+                                <input id="login-email" type="email" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                            </div>
+                            <div class="mb-6">
+                                <label for="login-password" class="block text-sm font-medium text-slate-700 mb-1">密码</label>
+                                <input id="login-password" type="password" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-all">登录</button>
+                        </form>
+                    </div>`;
 
             const showRegisterModal = () => showModal(registerModalContent);
             const showLoginModal = () => showModal(loginModalContent);
-            const showVerificationModal = (email) => showModal(verifyModalContent(email));
-            const showTermsModal = (email) => {
-                currentUserEmail = email;
-                showModal(termsModalContent);
-
-                const iframe = document.querySelector('#terms-content iframe');
-                iframe.onload = () => {
-                    const termsBody = iframe.contentWindow.document.body;
-                    const agreeCheckbox = document.getElementById('agree-checkbox');
-                    const agreeBtn = document.getElementById('agree-btn');
-
-                    iframe.contentWindow.onscroll = () => {
-                        const scrollable = termsBody.scrollHeight - iframe.clientHeight;
-                        if (termsBody.scrollTop >= scrollable - 50) { // Check if scrolled near the bottom
-                            agreeCheckbox.disabled = false;
-                        }
-                    };
-
-                    agreeCheckbox.addEventListener('change', () => { agreeBtn.disabled = !agreeCheckbox.checked; });
-                };
-            };
 
             async function handleApiRequest(url, body) {
                 try {
@@ -222,7 +176,7 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(body),
                     });
-                    return { ok: response.ok, status: response.status, data: await response.json() };
+                    return { ok: response.ok, data: await response.json() };
                 } catch (error) {
                     console.error('API请求失败:', error);
                     return { ok: false, data: { message: '网络错误或服务器无响应' } };
@@ -231,20 +185,9 @@
 
             async function onRegisterSubmit(email, password) {
                 const result = await handleApiRequest('/register', { email, password });
+                alert(result.data.message); // 使用 alert 提示用户
                 if (result.ok) {
-                    showVerificationModal(email);
-                } else {
-                    alert(`注册失败: ${result.data.message}`);
-                }
-            }
-
-            async function onVerifySubmit(email, code) {
-                const result = await handleApiRequest('/verify', { email, code });
-                if (result.ok) {
-                    alert(result.data.message);
                     showLoginModal();
-                } else {
-                    alert(`验证失败: ${result.data.message}`);
                 }
             }
 
@@ -252,46 +195,20 @@
                 const result = await handleApiRequest('/login', { email, password });
                 if (result.ok) {
                     hideModal();
-                    if (!result.data.agreed_to_terms) {
-                        showTermsModal(email);
-                    } else {
-                        sessionStorage.setItem('loggedInUser', email);
-                        updateUIForLoggedIn(email);
-                    }
+                    sessionStorage.setItem('loggedInUser', email);
+                    updateUIForLoggedIn(email);
                 } else {
-                    if (result.data.action === 'verify') {
-                        alert(result.data.message);
-                        showVerificationModal(email);
-                    } else {
-                        alert(`登录失败: ${result.data.message}`);
-                    }
-                }
-            }
-
-            async function onAgreeTermsSubmit() {
-                const result = await handleApiRequest('/agree_terms', { email: currentUserEmail });
-                if (result.ok) {
-                    hideModal();
-                    sessionStorage.setItem('loggedInUser', currentUserEmail);
-                    updateUIForLoggedIn(currentUserEmail);
-                } else {
-                    alert('操作失败，请重试');
+                    alert(`登录失败: ${result.data.message}`); // 使用 alert 提示用户
                 }
             }
 
             document.body.addEventListener('click', e => {
-                const targetId = e.target.id;
-                const closestButton = e.target.closest('button');
-                const target = closestButton || e.target;
-
+                const target = e.target.closest('button') || e.target;
                 if (target.id === 'login-btn-nav') showLoginModal();
                 if (target.id === 'register-btn-nav') showRegisterModal();
                 if (target.id === 'logout-btn') updateUIForLoggedOut();
-                if (target.id === 'agree-btn') onAgreeTermsSubmit();
-
-                if (e.target.classList.contains('modal-overlay')) {
-                    hideModal();
-                }
+                // 点击模态框背景关闭
+                if (e.target.classList.contains('modal-overlay')) hideModal();
             });
 
             document.body.addEventListener('submit', e => {
@@ -302,11 +219,9 @@
                 if (e.target.id === 'login-form') {
                     onLoginSubmit(e.target.elements['login-email'].value, e.target.elements['login-password'].value);
                 }
-                if (e.target.id === 'verify-form') {
-                    onVerifySubmit(e.target.elements['verify-email'].value, e.target.elements['verify-code'].value);
-                }
             });
 
+            // 检查 session storage 看用户是否已登录
             const loggedInUser = sessionStorage.getItem('loggedInUser');
             if (loggedInUser) {
                 updateUIForLoggedIn(loggedInUser);
@@ -317,3 +232,4 @@
     </script>
 </body>
 </html>
+
