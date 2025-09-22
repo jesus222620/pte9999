@@ -96,74 +96,90 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 flex items-center justify-center min-h-screen font-sans">
-    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl p-6 md:p-8 m-4">
-
-        <div class="text-center border-b pb-4 mb-6">
-            <h1 class="text-3xl font-extrabold text-slate-800">高级WFD默写教练</h1>
-            <p class="text-slate-500 mt-2">智能识别多种答案、支持重练、带倒计时</p>
-        </div>
-
-        <!-- 控制区域 -->
-        <div class="grid grid-cols-1 md:grid-cols-3 items-center gap-4 mb-6">
-            <!-- 播放和题目控制 -->
-            <div class="flex items-center justify-center md:justify-start gap-2 sm:gap-4">
-                <button id="play-audio-btn" title="播放" class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
-                    <i data-lucide="play-circle"></i><span class="hidden sm:inline">播放</span>
-                </button>
-                <button id="retry-btn" title="重来本题" class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
-                    <i data-lucide="rotate-cw"></i><span class="hidden sm:inline">重来</span>
-                </button>
-                <button id="next-question-btn" title="下一题" class="flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
-                    <span class="hidden sm:inline">下一题</span><i data-lucide="arrow-right-circle"></i>
-                </button>
+<body class="bg-slate-100 flex items-start justify-center min-h-screen font-sans p-4">
+    <div class="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- 主练习区 -->
+        <div class="lg:col-span-2 w-full bg-white rounded-2xl shadow-2xl p-6 md:p-8">
+            <div class="text-center border-b pb-4 mb-6">
+                <h1 class="text-3xl font-extrabold text-slate-800">高级WFD默写教练</h1>
+                <p class="text-slate-500 mt-2">智能识别多种答案、支持重练、带倒计时</p>
             </div>
-            <!-- 速度和倒计时 -->
-            <div class="flex items-center justify-center gap-4 sm:gap-6">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="gauge-circle" class="text-slate-500"></i>
-                    <label for="speed-control" class="text-slate-600 font-medium">语速:</label>
-                    <input id="speed-control" type="range" min="0.7" max="1.3" value="1.0" step="0.1" class="w-20 sm:w-24 cursor-pointer">
-                    <span id="speed-value" class="font-bold text-indigo-600 w-8">1.0x</span>
+
+            <!-- 控制区域 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 items-center gap-4 mb-6">
+                <!-- 播放和题目控制 -->
+                <div class="flex items-center justify-center md:justify-start gap-1 sm:gap-2">
+                    <button id="play-audio-btn" title="播放" class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
+                        <i data-lucide="play-circle"></i><span class="hidden sm:inline">播放</span>
+                    </button>
+                    <button id="retry-btn" title="重来本题" class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
+                        <i data-lucide="rotate-cw"></i><span class="hidden sm:inline">重来</span>
+                    </button>
+                    <button id="prev-question-btn" title="上一题" class="flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
+                        <i data-lucide="arrow-left-circle"></i><span class="hidden sm:inline">上题</span>
+                    </button>
+                    <button id="next-question-btn" title="下一题" class="flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
+                        <span class="hidden sm:inline">下题</span><i data-lucide="arrow-right-circle"></i>
+                    </button>
                 </div>
-                <div class="flex items-center gap-2">
-                    <i data-lucide="timer" class="text-slate-500"></i>
-                    <span class="text-slate-600 font-medium">倒计时:</span>
-                    <span id="timer-display" class="font-bold text-2xl text-slate-800 w-12 text-center">30</span>
+                <!-- 速度和倒计时 -->
+                <div class="flex items-center justify-center gap-4 sm:gap-6">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="gauge-circle" class="text-slate-500"></i>
+                        <label for="speed-control" class="text-slate-600 font-medium">语速:</label>
+                        <input id="speed-control" type="range" min="0.7" max="1.3" value="1.0" step="0.1" class="w-20 sm:w-24 cursor-pointer">
+                        <span id="speed-value" class="font-bold text-indigo-600 w-8">1.0x</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="timer" class="text-slate-500"></i>
+                        <span class="text-slate-600 font-medium">倒计时:</span>
+                        <span id="timer-display" class="font-bold text-2xl text-slate-800 w-12 text-center">30</span>
+                    </div>
+                </div>
+                <!-- 题目计数 -->
+                <div class="text-sm text-slate-500 text-center md:text-right">
+                    当前题目: <span id="current-question-index" class="font-bold">1</span> / <span id="total-questions" class="font-bold">0</span>
                 </div>
             </div>
-            <!-- 题目计数 -->
-            <div class="text-sm text-slate-500 text-center md:text-right">
-                当前题目: <span id="current-question-index" class="font-bold">1</span> / <span id="total-questions" class="font-bold">0</span>
+
+            <div class="mb-6">
+                <textarea id="user-input" rows="4" class="w-full p-4 border-2 border-slate-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 transition" placeholder="请在此处输入你听到的句子..."></textarea>
             </div>
-        </div>
 
-        <div class="mb-6">
-            <textarea id="user-input" rows="4" class="w-full p-4 border-2 border-slate-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 transition" placeholder="请在此处输入你听到的句子..."></textarea>
-        </div>
+            <button id="submit-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg text-lg shadow-xl transition-all transform hover:scale-105">
+                提交答案并对比
+            </button>
 
-        <button id="submit-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg text-lg shadow-xl transition-all transform hover:scale-105">
-            提交答案并对比
-        </button>
-
-        <div id="result-container" class="mt-8 hidden fade-in">
-            <div class="border-t pt-6">
-                <div class="text-center mb-6">
-                    <h3 class="text-2xl font-bold text-slate-700">你的得分</h3>
-                    <p class="text-6xl font-extrabold text-indigo-600 mt-2">
-                        <span id="score-display">0</span> / <span id="total-score-display">0</span>
-                    </p>
+            <div id="result-container" class="mt-8 hidden fade-in">
+                <div class="border-t pt-6">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold text-slate-700">你的得分</h3>
+                        <p class="text-6xl font-extrabold text-indigo-600 mt-2">
+                            <span id="score-display">0</span> / <span id="total-score-display">0</span>
+                        </p>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-700 mb-4">对比结果</h3>
+                    <div id="comparison-result" class="p-4 bg-slate-50 rounded-lg comparison-result"></div>
+                    <h3 class="text-xl font-bold text-slate-700 mt-6 mb-4">正确答案</h3>
+                    <div id="correct-answer" class="p-4 bg-slate-50 rounded-lg text-slate-800 font-semibold text-lg"></div>
                 </div>
-                <h3 class="text-xl font-bold text-slate-700 mb-4">对比结果</h3>
-                <div id="comparison-result" class="p-4 bg-slate-50 rounded-lg comparison-result"></div>
-                <h3 class="text-xl font-bold text-slate-700 mt-6 mb-4">正确答案</h3>
-                <div id="correct-answer" class="p-4 bg-slate-50 rounded-lg text-slate-800 font-semibold text-lg"></div>
+            </div>
+
+            <footer class="text-center text-slate-400 text-sm mt-8 pt-4 border-t">
+                &copy; <span id="copyright-year"></span> pte9999. All Rights Reserved.
+            </footer>
+        </div>
+        <!-- (新增!) 练习历史面板 -->
+        <div class="w-full bg-white rounded-2xl shadow-2xl p-6 md:p-8 lg:sticky lg:top-8">
+            <div class="text-center border-b pb-4 mb-4">
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center justify-center gap-2"><i data-lucide="history"></i>练习历史</h2>
+            </div>
+            <div id="history-list-container" class="h-96 lg:h-[calc(100vh-12rem)] overflow-y-auto pr-2">
+                <ul id="history-list" class="space-y-3">
+                    <!-- 历史记录将通过JS动态插入这里 -->
+                </ul>
             </div>
         </div>
-
-        <footer class="text-center text-slate-400 text-sm mt-8 pt-4 border-t">
-            &copy; <span id="copyright-year"></span> pte9999. All Rights Reserved.
-        </footer>
     </div>
 
     <script>
@@ -250,9 +266,12 @@
             let voices = [];
             let timerInterval = null;
             let timeLeft = 30;
+            let scoreHistory = []; // (新增!) 用于存储历史记录的数组
 
+            // ... (其他元素获取) ...
             const playAudioBtn = document.getElementById('play-audio-btn');
             const retryBtn = document.getElementById('retry-btn');
+            const prevQuestionBtn = document.getElementById('prev-question-btn');
             const nextQuestionBtn = document.getElementById('next-question-btn');
             const submitBtn = document.getElementById('submit-btn');
             const userInput = document.getElementById('user-input');
@@ -267,8 +286,49 @@
             const scoreDisplay = document.getElementById('score-display');
             const totalScoreDisplay = document.getElementById('total-score-display');
             const copyrightYearSpan = document.getElementById('copyright-year');
+            const historyList = document.getElementById('history-list'); // (新增!) 历史列表元素
+
+            // (新增!) 从localStorage加载历史记录
+            function loadHistoryFromStorage() {
+                const savedHistory = localStorage.getItem('wfdScoreHistory');
+                if (savedHistory) {
+                    scoreHistory = JSON.parse(savedHistory);
+                }
+            }
+
+            // (新增!) 保存历史记录到localStorage
+            function saveHistoryToStorage() {
+                localStorage.setItem('wfdScoreHistory', JSON.stringify(scoreHistory));
+            }
+
+            // (新增!) 渲染历史记录列表
+            function renderHistory() {
+                historyList.innerHTML = ''; // 清空列表
+                if (scoreHistory.length === 0) {
+                    historyList.innerHTML = `<li class="text-slate-400 text-center py-4">暂无练习记录</li>`;
+                    return;
+                }
+                // 从新到旧显示
+                scoreHistory.slice().reverse().forEach(entry => {
+                    const li = document.createElement('li');
+                    li.className = `p-3 rounded-lg flex justify-between items-center ${entry.score === entry.totalScore ? 'bg-green-50' : 'bg-red-50'}`;
+
+                    const scoreColor = entry.score === entry.totalScore ? 'text-green-700' : 'text-red-700';
+
+                    li.innerHTML = `
+                            <div>
+                                <span class="font-bold text-slate-700">第 ${entry.questionId} 题</span>
+                                <span class="block text-xs text-slate-500">${new Date(entry.timestamp).toLocaleString('zh-CN')}</span>
+                            </div>
+                            <span class="text-xl font-extrabold ${scoreColor}">${entry.score}/${entry.totalScore}</span>
+                        `;
+                    historyList.appendChild(li);
+                });
+            }
 
             function initialize() {
+                loadHistoryFromStorage(); // (新增!)
+                renderHistory(); // (新增!)
                 loadVoices();
                 loadQuestion(currentQuestionIndex);
                 totalQuestionsSpan.textContent = wfdSentences.length;
@@ -279,6 +339,7 @@
                 }
             }
 
+            // ... (loadVoices, loadQuestion, startTimer, stopTimer, updateSpeechRate 函数保持不变) ...
             function loadVoices() {
                 voices = synth.getVoices();
                 const preferredVoice = voices.find(voice => voice.name.includes('Google') && voice.lang.startsWith('en')) || voices.find(voice => voice.lang.startsWith('en-US'));
@@ -290,7 +351,7 @@
             function loadQuestion(index) {
                 stopTimer();
                 const question = wfdSentences[index];
-                utterance.text = question.sentence[0]; // Always speak the first variant
+                utterance.text = question.sentence[0];
                 userInput.value = '';
                 userInput.disabled = false;
                 resultContainer.classList.add('hidden');
@@ -336,13 +397,12 @@
 
                 const question = wfdSentences[currentQuestionIndex];
                 const userText = userInput.value;
-                const normalize = (text) => text.toLowerCase().replace(/[.,?!]/g, '').trim().split(/\s+/).filter(Boolean);
+                const normalize = (text) => text.trim().split(/\s+/).filter(Boolean);
                 const userWords = normalize(userText);
 
                 let bestScore = -1;
                 let bestComparison = {};
 
-                // Iterate through all possible correct sentences to find the best match
                 for (const correctText of question.sentence) {
                     const correctWords = normalize(correctText);
                     let score = 0;
@@ -370,7 +430,18 @@
                 totalScoreDisplay.textContent = bestComparison.totalScore;
                 correctAnswerDiv.textContent = bestComparison.correctText;
 
-                // Generate visual diff based on the best matching correct answer
+                // (新增!) 将结果添加到历史记录
+                const historyEntry = {
+                    questionId: currentQuestionIndex + 1,
+                    score: bestComparison.score,
+                    totalScore: bestComparison.totalScore,
+                    timestamp: new Date().toISOString()
+                };
+                scoreHistory.push(historyEntry);
+                saveHistoryToStorage();
+                renderHistory();
+
+                // ... (生成对比结果的HTML逻辑保持不变) ...
                 const correctWordsForDiff = normalize(bestComparison.correctText);
                 let resultHTML = '';
                 const correctWordMatched = correctWordsForDiff.map(() => false);
@@ -398,6 +469,7 @@
                 resultContainer.classList.remove('hidden');
             }
 
+            // ... (其他事件监听器保持不变) ...
             function playCurrentAudio() {
                 if (synth.speaking) synth.cancel();
 
@@ -411,36 +483,32 @@
                 synth.speak(utterance);
             }
 
-            playAudioBtn.addEventListener('click', playCurrentAudio);
+            function navigateAndPlay(direction) {
+                if (direction === 'next') {
+                    currentQuestionIndex = (currentQuestionIndex + 1) % wfdSentences.length;
+                } else {
+                    currentQuestionIndex = (currentQuestionIndex - 1 + wfdSentences.length) % wfdSentences.length;
+                }
+                loadQuestion(currentQuestionIndex);
 
+                const buttons = [playAudioBtn, retryBtn, prevQuestionBtn, nextQuestionBtn];
+                buttons.forEach(btn => btn.disabled = true);
+
+                setTimeout(() => {
+                    playCurrentAudio();
+                    buttons.forEach(btn => btn.disabled = false);
+                }, 1000);
+            }
+
+            playAudioBtn.addEventListener('click', playCurrentAudio);
             retryBtn.addEventListener('click', () => {
                 loadQuestion(currentQuestionIndex);
                 playCurrentAudio();
             });
-
-            // --- MODIFIED BEHAVIOR ---
-            nextQuestionBtn.addEventListener('click', () => {
-                currentQuestionIndex = (currentQuestionIndex + 1) % wfdSentences.length;
-                loadQuestion(currentQuestionIndex);
-
-                // Disable buttons during the delay
-                playAudioBtn.disabled = true;
-                retryBtn.disabled = true;
-                nextQuestionBtn.disabled = true;
-
-                // Wait 1 second, then auto-play
-                setTimeout(() => {
-                    playCurrentAudio();
-                    // Re-enable buttons after playing
-                    playAudioBtn.disabled = false;
-                    retryBtn.disabled = false;
-                    nextQuestionBtn.disabled = false;
-                }, 1000);
-            });
-
+            prevQuestionBtn.addEventListener('click', () => navigateAndPlay('prev'));
+            nextQuestionBtn.addEventListener('click', () => navigateAndPlay('next'));
             speedControl.addEventListener('input', updateSpeechRate);
             submitBtn.addEventListener('click', compareAnswers);
-
             userInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
