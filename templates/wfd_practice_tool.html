@@ -110,43 +110,40 @@
                 <p class="text-slate-500 mt-2">智能识别多种答案、支持重练、带倒计时</p>
             </div>
 
-            <!-- 控制区域 -->
-            <div class="grid grid-cols-1 md:grid-cols-3 items-center gap-4 mb-6">
-                <!-- (优化!) 播放和题目控制 -->
-                <div class="flex items-center justify-center md:justify-start gap-2">
+            <!-- (最终优化!) 控制区域 -->
+            <div class="flex flex-wrap items-center justify-between gap-y-4 gap-x-6 mb-6">
+                <!-- 播放和题目控制 -->
+                <div class="flex items-center justify-center sm:justify-start gap-2 flex-shrink-0">
                     <button id="play-audio-btn" title="播放" class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
-                        <i data-lucide="play-circle"></i><span class="hidden xl:inline">播放</span>
+                        <i data-lucide="play-circle"></i><span class="hidden sm:inline">播放</span>
                     </button>
                     <button id="retry-btn" title="重来本题" class="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
-                        <i data-lucide="rotate-cw"></i><span class="hidden xl:inline">重来</span>
+                        <i data-lucide="rotate-cw"></i><span class="hidden sm:inline">重来</span>
                     </button>
-                    <!-- Visual separator -->
                     <div class="w-px h-8 bg-slate-300 mx-1"></div>
                     <button id="prev-question-btn" title="上一题" class="flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
-                        <i data-lucide="arrow-left-circle"></i><span class="hidden xl:inline">上题</span>
+                        <i data-lucide="arrow-left-circle"></i>
                     </button>
                     <button id="next-question-btn" title="下一题" class="flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-all transform hover:scale-105">
-                        <i data-lucide="arrow-right-circle"></i><span class="hidden xl:inline">下题</span>
+                        <i data-lucide="arrow-right-circle"></i>
                     </button>
                 </div>
                 <!-- 速度和倒计时 -->
-                <div class="flex items-center justify-center gap-4 sm:gap-6">
+                <div class="flex items-center justify-center gap-4 sm:gap-6 w-full sm:w-auto mx-auto">
                     <div class="flex items-center gap-2">
                         <i data-lucide="gauge-circle" class="text-slate-500"></i>
-                        <label for="speed-control" class="text-slate-600 font-medium">语速:</label>
                         <input id="speed-control" type="range" min="0.7" max="1.3" value="1.0" step="0.1" class="w-20 sm:w-24 cursor-pointer">
                         <span id="speed-value" class="font-bold text-indigo-600 w-8">1.0x</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <i data-lucide="timer" class="text-slate-500"></i>
-                        <span class="text-slate-600 font-medium">倒计时:</span>
                         <span id="timer-display" class="font-bold text-2xl text-slate-800 w-12 text-center">30</span>
                     </div>
                 </div>
                 <!-- 题目计数 -->
-                <div class="text-sm text-slate-500 text-center md:text-right flex items-center justify-center md:justify-end gap-2">
+                <div class="text-sm text-slate-500 flex items-center justify-center sm:justify-end gap-2 flex-shrink-0">
                     <button id="star-btn" title="收藏本题" class="text-slate-400 hover:text-yellow-400 transition-colors"><i data-lucide="star" class="w-5 h-5"></i></button>
-                    <span>当前题目: <span id="current-question-index" class="font-bold">1</span> / <span id="total-questions" class="font-bold">0</span></span>
+                    <span><span id="current-question-index" class="font-bold">1</span> / <span id="total-questions" class="font-bold">0</span></span>
                 </div>
             </div>
 
@@ -432,13 +429,36 @@
                 updateStarIcon();
             }
 
-            function startTimer() { /* ... unchanged ... */ }
-            function stopTimer() { /* ... unchanged ... */ }
-            function updateSpeechRate() { /* ... unchanged ... */ }
+            function startTimer() {
+                stopTimer();
+                timeLeft = 30;
+                timerDisplay.textContent = timeLeft;
+                timerDisplay.classList.remove('urgent');
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerDisplay.textContent = timeLeft;
+                    if (timeLeft <= 10) {
+                        timerDisplay.classList.add('urgent');
+                    }
+                    if (timeLeft <= 0) {
+                        stopTimer();
+                        submitBtn.click();
+                    }
+                }, 1000);
+            }
 
-            function startTimer() { stopTimer(); timeLeft = 30; timerDisplay.textContent = timeLeft; timerDisplay.classList.remove('urgent'); timerInterval = setInterval(() => { timeLeft--; timerDisplay.textContent = timeLeft; if (timeLeft <= 10) { timerDisplay.classList.add('urgent'); } if (timeLeft <= 0) { stopTimer(); submitBtn.click(); } }, 1000); }
-            function stopTimer() { clearInterval(timerInterval); timerInterval = null; timerDisplay.textContent = 30; timerDisplay.classList.remove('urgent'); }
-            function updateSpeechRate() { const rate = parseFloat(speedControl.value); utterance.rate = rate; speedValueSpan.textContent = `${rate.toFixed(1)}x`; }
+            function stopTimer() {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                timerDisplay.textContent = 30;
+                timerDisplay.classList.remove('urgent');
+            }
+
+            function updateSpeechRate() {
+                const rate = parseFloat(speedControl.value);
+                utterance.rate = rate;
+                speedValueSpan.textContent = `${rate.toFixed(1)}x`;
+            }
 
             function compareAnswers() {
                 stopTimer();
