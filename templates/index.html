@@ -3,419 +3,316 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>高级WFD默写教练</title>
-    <!-- 引入Tailwind CSS 用于美化界面 -->
+    <title>我的网站</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入Lucide图标库 -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* 自定义动画和样式 */
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(10px);
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0);
             }
         }
 
-        .fade-in {
-            animation: fadeIn 0.5s ease-out forwards;
+        .modal-overlay {
+            animation: fadeIn 0.3s ease-out;
         }
 
-        .comparison-result span {
-            padding: 4px 6px;
-            border-radius: 4px;
-            margin: 2px;
-            display: inline-block;
-            font-size: 1.1rem;
-            line-height: 1.6;
-            transition: all 0.3s ease;
-        }
-
-        .word-correct {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-
-        .word-incorrect {
-            background-color: #fee2e2;
-            color: #991b1b;
-            text-decoration: line-through;
-        }
-
-        .word-missing {
-            background-color: #e0e7ff;
-            color: #4338ca;
-            border: 1px dashed #6366f1;
-        }
-
-        .word-extra {
-            background-color: #fef9c3;
-            color: #854d0e;
-            border: 1px dashed #ca8a04;
-        }
-
-        .pulse-once {
-            animation: pulse-animation 0.8s ease-out;
-        }
-
-        @keyframes pulse-animation {
-            0% {
-                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
             }
 
-            70% {
-                box-shadow: 0 0 0 15px rgba(99, 102, 241, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+            to {
+                opacity: 1;
+                transform: scale(1);
             }
         }
-        /* 倒计时样式 */
-        #timer-display {
-            transition: color 0.5s, transform 0.5s;
+
+        .modal-content {
+            animation: scaleIn 0.3s ease-out;
         }
 
-            #timer-display.urgent {
-                color: #dc2626;
-                transform: scale(1.1);
-            }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
-<body class="bg-slate-100 flex items-center justify-center min-h-screen font-sans">
-    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl p-8 m-4">
-
-        <div class="text-center border-b pb-4 mb-6">
-            <h1 class="text-3xl font-extrabold text-slate-800">高级WFD默写教练</h1>
-            <p class="text-slate-500 mt-2">调语速、练听写、带倒计时、智能纠错</p>
-        </div>
-
-        <!-- 控制区域 -->
-        <div class="grid grid-cols-1 md:grid-cols-3 items-center gap-4 mb-6">
-            <!-- 播放和题目控制 -->
-            <div class="flex items-center justify-center md:justify-start gap-4">
-                <button id="play-audio-btn" class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105">
-                    <i data-lucide="play-circle"></i><span>播放</span>
-                </button>
-                <button id="next-question-btn" class="flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105">
-                    <span>下一题</span><i data-lucide="arrow-right-circle"></i>
-                </button>
+<body class="bg-slate-50 font-sans text-slate-800">
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="/" class="font-bold text-2xl text-indigo-600 flex items-center">
+                <i data-lucide="shield-check" class="mr-2"></i><span>pte9999</span>
+            </a>
+            <div id="auth-buttons" class="flex items-center space-x-2">
+                <button id="login-btn-nav" class="bg-transparent hover:bg-indigo-50 text-indigo-600 font-semibold py-2 px-4 border border-indigo-500 rounded-lg transition-all">登录</button>
+                <button id="register-btn-nav" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-all transform hover:scale-105">免费注册</button>
             </div>
-            <!-- 速度和倒计时 -->
-            <div class="flex items-center justify-center gap-6">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="gauge-circle" class="text-slate-500"></i>
-                    <label for="speed-control" class="text-slate-600 font-medium">语速:</label>
-                    <input id="speed-control" type="range" min="0.7" max="1.3" value="0.9" step="0.1" class="w-24 cursor-pointer">
-                    <span id="speed-value" class="font-bold text-indigo-600 w-8">0.9x</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <i data-lucide="timer" class="text-slate-500"></i>
-                    <span class="text-slate-600 font-medium">倒计时:</span>
-                    <span id="timer-display" class="font-bold text-2xl text-slate-800 w-12 text-center">30</span>
+            <div id="user-info" class="hidden items-center space-x-4">
+                <span class="font-medium">欢迎, <span id="user-email-display"></span></span>
+                <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-all">退出</button>
+            </div>
+        </div>
+    </nav>
+
+    <main id="content-area" class="container mx-auto px-6 py-12">
+        <div id="public-content">
+            <div class="text-center">
+                <h1 class="text-5xl font-extrabold text-slate-900 mb-4">欢迎来到我们的平台!</h1>
+                <p class="text-xl text-slate-600 mb-8">这是一个公开页面, 任何人都可以看到这里的内容。要访问我们的核心功能, 请先免费注册。</p>
+                <div class="max-w-4xl mx-auto p-8 bg-indigo-600 rounded-2xl shadow-lg">
+                    <div class="grid grid-cols-5 gap-4 text-indigo-300 text-8xl opacity-30">
+                        <i data-lucide="brain-circuit"></i><i data-lucide="book-open-check"></i><i data-lucide="award"></i><i data-lucide="target"></i><i data-lucide="trending-up"></i>
+                    </div>
                 </div>
             </div>
-            <!-- 题目计数 -->
-            <div class="text-sm text-slate-500 text-center md:text-right">
-                当前题目: <span id="current-question-index" class="font-bold">1</span> / <span id="total-questions" class="font-bold">0</span>
-            </div>
         </div>
-
-        <div class="mb-6">
-            <textarea id="user-input" rows="4" class="w-full p-4 border-2 border-slate-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 transition" placeholder="请在此处输入你听到的句子..."></textarea>
-        </div>
-
-        <button id="submit-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg text-lg shadow-xl transition-all transform hover:scale-105">
-            提交答案并对比
-        </button>
-
-        <div id="result-container" class="mt-8 hidden fade-in">
-            <div class="border-t pt-6">
-                <!-- (新增!) 得分显示区域 -->
-                <div class="text-center mb-6">
-                    <h3 class="text-2xl font-bold text-slate-700">你的得分</h3>
-                    <p class="text-6xl font-extrabold text-indigo-600 mt-2">
-                        <span id="score-display">0</span> / <span id="total-score-display">0</span>
-                    </p>
+        <div id="member-content" class="hidden">
+            <h2 class="text-4xl font-bold mb-8">会员专区</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <a href="/wfd" class="block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer">
+                    <i data-lucide="swords" class="w-12 h-12 text-indigo-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">WFD默写教练</h3>
+                    <p class="text-slate-600">点击这里开始你的听写练习，支持调速和智能纠错。</p>
+                </a>
+                <div class="p-8 bg-white rounded-2xl shadow-lg opacity-50 cursor-not-allowed">
+                    <i data-lucide="bar-chart-3" class="w-12 h-12 text-blue-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">学习数据分析</h3>
+                    <p class="text-slate-600">功能开发中，敬请期待。</p>
                 </div>
-
-                <h3 class="text-xl font-bold text-slate-700 mb-4">对比结果</h3>
-                <div id="comparison-result" class="p-4 bg-slate-50 rounded-lg comparison-result"></div>
-                <h3 class="text-xl font-bold text-slate-700 mt-6 mb-4">正确答案</h3>
-                <div id="correct-answer" class="p-4 bg-slate-50 rounded-lg text-slate-800 font-semibold text-lg"></div>
+                <div class="p-8 bg-white rounded-2xl shadow-lg opacity-50 cursor-not-allowed">
+                    <i data-lucide="download-cloud" class="w-12 h-12 text-purple-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">资料下载区</h3>
+                    <p class="text-slate-600">功能开发中，敬请期待。</p>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <div id="modal-container"></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const wfdSentences = [
-                { id: 1, sentence: "Please get us a meeting room for the next hour." },
-                { id: 2, sentence: "Communication skills have become more important in recent years." },
-                { id: 3, sentence: "Before preparing any food, be sure to wash your hands well." },
-                { id: 4, sentence: "Before preparing food, please make sure to wash your hands." },
-                { id: 5, sentence: "The weather has been lovely from this time of the year." },
-                { id: 6, sentence: "Please close the door behind you when you leave the room." },
-                { id: 7, sentence: "There was a lot of traffic this morning." },
-                { id: 8, sentence: "The restroom is down the hall and on the right." },
-                { id: 9, sentence: "The teacher explains the homework to the students." },
-                { id: 10, sentence: "At that time, few people moved through the town to the village." },
-                { id: 11, sentence: "The fiction books have just passed to the counter." },
-                { id: 12, sentence: "You have to make an appointment with your doctor." },
-                { id: 13, sentence: "The students will meet their new teacher after summer vacation." },
-                { id: 14, sentence: "Please move us to the meeting room for the next hour." },
-                { id: 15, sentence: "You must call your doctor to make an appointment." },
-                { id: 16, sentence: "Please make an appointment with your tutor about work." },
-                { id: 17, sentence: "Rail transport is becoming more and more popular." },
-                { id: 18, sentence: "You can keep your bags in the back room." },
-                { id: 19, sentence: "The weather used to be lovely at this time of the year." },
-                { id: 20, sentence: "Everyone in this room needs to follow the rules." },
-                { id: 21, sentence: "I want to make an appointment with the manager." },
-                { id: 22, sentence: "The teacher explained the homework to the class." },
-                { id: 23, sentence: "You should meet me in the lecture theater room." },
-                { id: 24, sentence: "At that time, few people moved from towns to villages." },
-                { id: 25, sentence: "Students of the first year usually live on campus." },
-                { id: 26, sentence: "The fiction books are just past the counter." },
-                { id: 27, sentence: "The teacher asked the group to complete the task." },
-                { id: 28, sentence: "There was a lot of traffic jams on the road this morning." },
-                { id: 29, sentence: "The school canteen sells a large variety of water and food." },
-                { id: 30, sentence: "Please turn off the lights to save energy." },
-                { id: 31, sentence: "Traffic is the main cause of air pollution in many cities." },
-                { id: 32, sentence: "You will get your uniform on the first day." },
-                { id: 33, sentence: "In my opinion, this car should be repaired soon." },
-                { id: 34, sentence: "We should have a meeting to discuss and report." },
-                { id: 35, sentence: "Sales figures for last year were better than expected." },
-                { id: 36, sentence: "The university canteen offers different healthy meal options." },
-                { id: 37, sentence: "Employment opportunities available in engineering are increasing rapidly." },
-                { id: 38, sentence: "We cannot consider an increase in price at this stage." },
-                { id: 39, sentence: "We should have a meeting to discuss the report." },
-                { id: 40, sentence: "Our culture influences the choices we make." },
-                { id: 41, sentence: "There will be a guest lecturer in the next class." },
-                { id: 42, sentence: "Exam results will be published on the noticeboard." },
-                { id: 43, sentence: "Atoms are the central building blocks of matter." },
-                { id: 44, sentence: "There will be a meeting for the first-year students on Friday." },
-                { id: 45, sentence: "The stairs are to the left of the elevator." },
-                { id: 46, sentence: "Restrooms are down the entrance and to the right." },
-                { id: 47, sentence: "Time is needed to complete the lecture." },
-                { id: 48, sentence: "Restaurants are down to the hall and next to the right." },
-                { id: 49, sentence: "Make sure you wash your hands before preparing the food." },
-                { id: 50, sentence: "You should draw your graph on a separate page." },
-                { id: 51, sentence: "You can ask your tutor for further assistance." },
-                { id: 52, sentence: "You are trained to be a special journalist." },
-                { id: 53, sentence: "We can have a lecture on the morning of Thursday." },
-                { id: 54, sentence: "We can all meet in the office after the lecture." },
-                { id: 55, sentence: "The digital revolution has changed the way we read." },
-                { id: 56, sentence: "Before the refrigerator was invented, people used underground ice houses." },
-                { id: 57, sentence: "The nation achieved prosperity by opening its ports for trade." },
-                { id: 58, sentence: "Understanding visual media has never been more challenging." },
-                { id: 59, sentence: "Online courses allow students to work on their own paces." },
-                { id: 60, sentence: "In my opinion, this car should be repaired soon." },
-                { id: 61, sentence: "You can get your coffee and tea in the lounge room." },
-                { id: 62, sentence: "The teacher asked the group to commmence the task." },
-                { id: 63, sentence: "The island is located at the south end of the bay." },
-                { id: 64, sentence: "The falling birth rate means the number of students drops." },
-                { id: 65, sentence: "Please click the logo above to enter the site." },
-                { id: 66, sentence: "The camera can identify eyes and focus on them." },
-                { id: 67, sentence: "This article refers to a number of interesting experiments." },
-                { id: 68, sentence: "You should submit your team papers to the general office." },
-                { id: 69, sentence: "All students have their own styles of learning." },
-                { id: 70, sentence: "Stock prediction can be very capricious even for professionals." },
-                { id: 71, sentence: "New classrooms will be put into use next month." },
-                { id: 72, sentence: "You need to pass the written exam for the driver's license." }
-            ];
+            const authButtons = document.getElementById('auth-buttons');
+            const userInfo = document.getElementById('user-info');
+            const publicContent = document.getElementById('public-content');
+            const memberContent = document.getElementById('member-content');
+            const modalContainer = document.getElementById('modal-container');
+            let currentUserEmail = null; // 用于暂存当前操作的用户邮箱
 
-            let currentQuestionIndex = 0;
-            let synth = window.speechSynthesis;
-            let utterance = new SpeechSynthesisUtterance();
-            let voices = [];
-            let timerInterval = null;
-            let timeLeft = 30;
+            const showModal = (content) => {
+                modalContainer.innerHTML = `<div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 modal-overlay">${content}</div>`;
+                modalContainer.classList.remove('hidden');
+            };
 
-            const playAudioBtn = document.getElementById('play-audio-btn');
-            const nextQuestionBtn = document.getElementById('next-question-btn');
-            const submitBtn = document.getElementById('submit-btn');
-            const userInput = document.getElementById('user-input');
-            const resultContainer = document.getElementById('result-container');
-            const comparisonResultDiv = document.getElementById('comparison-result');
-            const correctAnswerDiv = document.getElementById('correct-answer');
-            const currentQuestionIndexSpan = document.getElementById('current-question-index');
-            const totalQuestionsSpan = document.getElementById('total-questions');
-            const speedControl = document.getElementById('speed-control');
-            const speedValueSpan = document.getElementById('speed-value');
-            const timerDisplay = document.getElementById('timer-display');
-            const scoreDisplay = document.getElementById('score-display');
-            const totalScoreDisplay = document.getElementById('total-score-display');
+            const hideModal = () => {
+                modalContainer.innerHTML = '';
+                modalContainer.classList.add('hidden');
+            };
 
-            function initialize() {
-                loadVoices();
-                loadQuestion(currentQuestionIndex);
-                totalQuestionsSpan.textContent = wfdSentences.length;
+            const updateUIForLoggedIn = (email) => {
+                currentUserEmail = email;
+                authButtons.classList.add('hidden');
+                userInfo.classList.remove('hidden');
+                document.getElementById('user-email-display').textContent = email;
+                publicContent.classList.add('hidden');
+                memberContent.classList.remove('hidden');
+            };
 
-                if (synth.onvoiceschanged !== undefined) {
-                    synth.onvoiceschanged = loadVoices;
-                }
-            }
+            const updateUIForLoggedOut = () => {
+                currentUserEmail = null;
+                authButtons.classList.remove('hidden');
+                userInfo.classList.add('hidden');
+                publicContent.classList.remove('hidden');
+                memberContent.classList.add('hidden');
+                sessionStorage.removeItem('loggedInUser');
+            };
 
-            function loadVoices() {
-                voices = synth.getVoices();
-                const preferredVoice = voices.find(voice => voice.name === 'Google US English') || voices.find(voice => voice.lang === 'en-US');
-                if (preferredVoice) utterance.voice = preferredVoice;
-                utterance.pitch = 1;
-                updateSpeechRate();
-            }
+            const registerModalContent = `
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 modal-content">
+                    <h2 class="text-3xl font-bold mb-6">创建免费账户</h2>
+                    <form id="register-form">
+                        <div class="mb-4">
+                            <label for="register-email" class="block text-sm font-medium text-slate-700 mb-1">邮箱地址</label>
+                            <input id="register-email" type="email" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <div class="mb-6">
+                            <label for="register-password" class="block text-sm font-medium text-slate-700 mb-1">密码</label>
+                            <input id="register-password" type="password" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-all">创建账户</button>
+                    </form>
+                </div>`;
 
-            function loadQuestion(index) {
-                stopTimer();
-                const question = wfdSentences[index];
-                utterance.text = question.sentence;
-                userInput.value = '';
-                userInput.disabled = false;
-                resultContainer.classList.add('hidden');
-                currentQuestionIndexSpan.textContent = index + 1;
-                userInput.focus();
-            }
+            const loginModalContent = `
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 modal-content">
+                    <h2 class="text-3xl font-bold mb-6">登录</h2>
+                    <form id="login-form">
+                        <div class="mb-4">
+                            <label for="login-email" class="block text-sm font-medium text-slate-700 mb-1">邮箱地址</label>
+                            <input id="login-email" type="email" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <div class="mb-6">
+                            <label for="login-password" class="block text-sm font-medium text-slate-700 mb-1">密码</label>
+                            <input id="login-password" type="password" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-all">登录</button>
+                    </form>
+                </div>`;
 
-            function startTimer() {
-                stopTimer();
-                timeLeft = 30;
-                timerDisplay.textContent = timeLeft;
-                timerDisplay.classList.remove('urgent');
+            const verifyModalContent = (email) => `
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 modal-content">
+                    <h2 class="text-3xl font-bold mb-2">验证您的邮箱</h2>
+                    <p class="text-slate-600 mb-6">我们已向 <span class="font-bold">${email}</span> 发送了一个6位数验证码。(在开发中, 请查看服务器终端)。</p>
+                    <form id="verify-form">
+                        <input type="hidden" id="verify-email" value="${email}">
+                        <div class="mb-4">
+                            <label for="verify-code" class="block text-sm font-medium text-slate-700 mb-1">验证码</label>
+                            <input id="verify-code" type="text" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-all">确认验证</button>
+                    </form>
+                </div>`;
 
-                timerInterval = setInterval(() => {
-                    timeLeft--;
-                    timerDisplay.textContent = timeLeft;
-                    if (timeLeft <= 10) {
-                        timerDisplay.classList.add('urgent');
-                    }
-                    if (timeLeft <= 0) {
-                        stopTimer();
-                        submitBtn.click();
-                    }
-                }, 1000);
-            }
+            const termsModalContent = `
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-8 modal-content flex flex-col h-[90vh]">
+                    <h2 class="text-3xl font-bold mb-4">服务条款和隐私政策</h2>
+                    <div id="terms-content" class="flex-grow border rounded-lg p-2 overflow-y-auto bg-slate-50 mb-4">
+                       <iframe src="/terms" class="w-full h-full border-0"></iframe>
+                    </div>
+                    <div class="flex items-center mb-4">
+                        <input type="checkbox" id="agree-checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" disabled>
+                        <label for="agree-checkbox" class="ml-2 block text-sm text-slate-800">我已阅读并同意以上服务条款和隐私政策。</label>
+                    </div>
+                    <button id="agree-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg transition-all disabled:bg-slate-400 disabled:cursor-not-allowed" disabled>同意并继续</button>
+                </div>`;
 
-            function stopTimer() {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                timerDisplay.textContent = 30;
-                timerDisplay.classList.remove('urgent');
-            }
+            const showRegisterModal = () => showModal(registerModalContent);
+            const showLoginModal = () => showModal(loginModalContent);
+            const showVerificationModal = (email) => showModal(verifyModalContent(email));
+            const showTermsModal = (email) => {
+                currentUserEmail = email;
+                showModal(termsModalContent);
 
-            function updateSpeechRate() {
-                const rate = parseFloat(speedControl.value);
-                utterance.rate = rate;
-                speedValueSpan.textContent = `${rate.toFixed(1)}x`;
-            }
+                const iframe = document.querySelector('#terms-content iframe');
+                iframe.onload = () => {
+                    const termsBody = iframe.contentWindow.document.body;
+                    const agreeCheckbox = document.getElementById('agree-checkbox');
+                    const agreeBtn = document.getElementById('agree-btn');
 
-            function compareAnswers() {
-                stopTimer();
-                userInput.disabled = true;
-                const correctText = wfdSentences[currentQuestionIndex].sentence;
-                const userText = userInput.value;
-                const normalize = (text) => text.toLowerCase().replace(/[.,?!]/g, '').trim().split(/\s+/).filter(Boolean);
-                const correctWords = normalize(correctText);
-                const userWords = normalize(userText);
-                const userWordStatus = userWords.map(() => 'extra');
-                const correctWordMatched = correctWords.map(() => false);
-
-                // 评分逻辑核心: 寻找拼写正确的单词
-                // 创建一个正确单词的副本，每匹配一个就从中移除，防止重复计分
-                let correctWordsPool = [...correctWords];
-                for (let i = 0; i < userWords.length; i++) {
-                    const matchIndex = correctWordsPool.indexOf(userWords[i]);
-                    if (matchIndex !== -1) {
-                        userWordStatus[i] = 'correct';
-                        correctWordsPool.splice(matchIndex, 1); // 从池中移除，确保只匹配一次
-                    }
-                }
-
-                // 标记不正确的单词，用于UI显示
-                for (let i = 0; i < userWords.length; i++) {
-                    if (userWordStatus[i] !== 'correct') {
-                        userWordStatus[i] = 'incorrect';
-                    }
-                }
-
-                // (新增!) 计算分数
-                const score = userWordStatus.filter(status => status === 'correct').length;
-                const totalScore = correctWords.length;
-
-                scoreDisplay.textContent = score;
-                totalScoreDisplay.textContent = totalScore;
-
-
-                // --- 生成对比结果HTML，用于UI显示 ---
-                const correctWordsOriginal = normalize(correctText);
-                const userWordsOriginal = normalize(userText);
-                let correctPointer = 0;
-                let userPointer = 0;
-                let finalResultHTML = '';
-
-                // 一个简化的diff算法，用于并排显示结果
-                while (correctPointer < correctWordsOriginal.length || userPointer < userWordsOriginal.length) {
-                    if (userWordsOriginal[userPointer] === correctWordsOriginal[correctPointer] && correctWordsOriginal[correctPointer] !== undefined) {
-                        finalResultHTML += `<span class="word-correct">${userWordsOriginal[userPointer]}</span>`;
-                        userPointer++;
-                        correctPointer++;
-                    } else {
-                        // 检查是否是遗漏的词
-                        if (userWordsOriginal.slice(userPointer).indexOf(correctWordsOriginal[correctPointer]) === -1 || correctWordsOriginal[correctPointer] === undefined) {
-                            if (userWordsOriginal[userPointer] !== undefined) {
-                                finalResultHTML += `<span class="word-incorrect">${userWordsOriginal[userPointer]}</span>`;
-                                userPointer++;
-                            } else {
-                                // 用户写完了，但还有遗漏
-                                finalResultHTML += `<span class="word-missing">${correctWordsOriginal[correctPointer]} (遗漏)</span>`;
-                                correctPointer++;
-                            }
-                        } else {
-                            finalResultHTML += `<span class="word-missing">${correctWordsOriginal[correctPointer]} (遗漏)</span>`;
-                            correctPointer++;
+                    iframe.contentWindow.onscroll = () => {
+                        const scrollable = termsBody.scrollHeight - iframe.clientHeight;
+                        if (termsBody.scrollTop >= scrollable - 50) { // Check if scrolled near the bottom
+                            agreeCheckbox.disabled = false;
                         }
-                    }
+                    };
+
+                    agreeCheckbox.addEventListener('change', () => { agreeBtn.disabled = !agreeCheckbox.checked; });
+                };
+            };
+
+            async function handleApiRequest(url, body) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body),
+                    });
+                    return { ok: response.ok, status: response.status, data: await response.json() };
+                } catch (error) {
+                    console.error('API请求失败:', error);
+                    return { ok: false, data: { message: '网络错误或服务器无响应' } };
                 }
-
-
-                comparisonResultDiv.innerHTML = finalResultHTML;
-                correctAnswerDiv.textContent = correctText;
-                resultContainer.classList.remove('hidden');
             }
 
-            playAudioBtn.addEventListener('click', () => {
-                if (synth.speaking) synth.cancel();
-                playAudioBtn.classList.add('pulse-once');
-                setTimeout(() => playAudioBtn.classList.remove('pulse-once'), 800);
+            async function onRegisterSubmit(email, password) {
+                const result = await handleApiRequest('/register', { email, password });
+                if (result.ok) {
+                    showVerificationModal(email);
+                } else {
+                    alert(`注册失败: ${result.data.message}`);
+                }
+            }
 
-                utterance.onend = () => {
-                    startTimer();
-                    userInput.focus();
-                };
+            async function onVerifySubmit(email, code) {
+                const result = await handleApiRequest('/verify', { email, code });
+                if (result.ok) {
+                    alert(result.data.message);
+                    showLoginModal();
+                } else {
+                    alert(`验证失败: ${result.data.message}`);
+                }
+            }
 
-                synth.speak(utterance);
-            });
+            async function onLoginSubmit(email, password) {
+                const result = await handleApiRequest('/login', { email, password });
+                if (result.ok) {
+                    hideModal();
+                    if (!result.data.agreed_to_terms) {
+                        showTermsModal(email);
+                    } else {
+                        sessionStorage.setItem('loggedInUser', email);
+                        updateUIForLoggedIn(email);
+                    }
+                } else {
+                    if (result.data.action === 'verify') {
+                        alert(result.data.message);
+                        showVerificationModal(email);
+                    } else {
+                        alert(`登录失败: ${result.data.message}`);
+                    }
+                }
+            }
 
-            nextQuestionBtn.addEventListener('click', () => {
-                currentQuestionIndex = (currentQuestionIndex + 1) % wfdSentences.length;
-                loadQuestion(currentQuestionIndex);
-            });
+            async function onAgreeTermsSubmit() {
+                const result = await handleApiRequest('/agree_terms', { email: currentUserEmail });
+                if (result.ok) {
+                    hideModal();
+                    sessionStorage.setItem('loggedInUser', currentUserEmail);
+                    updateUIForLoggedIn(currentUserEmail);
+                } else {
+                    alert('操作失败，请重试');
+                }
+            }
 
-            speedControl.addEventListener('input', updateSpeechRate);
+            document.body.addEventListener('click', e => {
+                const targetId = e.target.id;
+                const closestButton = e.target.closest('button');
+                const target = closestButton || e.target;
 
-            submitBtn.addEventListener('click', compareAnswers);
+                if (target.id === 'login-btn-nav') showLoginModal();
+                if (target.id === 'register-btn-nav') showRegisterModal();
+                if (target.id === 'logout-btn') updateUIForLoggedOut();
+                if (target.id === 'agree-btn') onAgreeTermsSubmit();
 
-            userInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    submitBtn.click();
+                if (e.target.classList.contains('modal-overlay')) {
+                    hideModal();
                 }
             });
 
-            initialize();
+            document.body.addEventListener('submit', e => {
+                e.preventDefault();
+                if (e.target.id === 'register-form') {
+                    onRegisterSubmit(e.target.elements['register-email'].value, e.target.elements['register-password'].value);
+                }
+                if (e.target.id === 'login-form') {
+                    onLoginSubmit(e.target.elements['login-email'].value, e.target.elements['login-password'].value);
+                }
+                if (e.target.id === 'verify-form') {
+                    onVerifySubmit(e.target.elements['verify-email'].value, e.target.elements['verify-code'].value);
+                }
+            });
+
+            const loggedInUser = sessionStorage.getItem('loggedInUser');
+            if (loggedInUser) {
+                updateUIForLoggedIn(loggedInUser);
+            }
+
+            lucide.createIcons();
         });
     </script>
 </body>
